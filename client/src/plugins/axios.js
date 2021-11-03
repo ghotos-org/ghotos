@@ -23,7 +23,6 @@ axios.interceptors.request.use(
 // doing something with the response
 axios.interceptors.response.use(
   (response) => {
-      console.log("response1",response)
 
      return response;
   },
@@ -52,7 +51,7 @@ axios.interceptors.response.use(
               console.log("res",res)
 
               if (res.status === 200) {
-                  //StorageService.setToken(res.data);
+                  StorageService.setToken(res.data);
                   axios.defaults.headers.common['Authorization'] = 'Bearer ' + StorageService.getAccessToken();
                   return axios(originalRequest);
               }
