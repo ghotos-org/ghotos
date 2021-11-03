@@ -1,0 +1,90 @@
+
+
+.ci-image-preview {
+    width: 310px;
+    height: 250px;
+    .wrapper {
+        width: 300px;
+        height: 200px;
+        img {
+            max-width: 300px;
+            height: auto;
+            max-height: 200px;
+        }
+
+    }
+
+    .ci-inner-title {
+        font-weight: bold;
+    }
+
+    .ci-inner-data {
+        display: flex;                  /* establish flex container */
+        flex-direction: row;            /* default value; can be omitted */
+        flex-wrap: nowrap;              /* default value; can be omitted */
+        justify-content: space-between; /* switched from default (flex-start, see below) */
+
+        div {
+            width: 50%;
+        }
+
+    }
+
+}
+
+
+
+.ci-file{
+    /*margin-top: -80px;*/
+    padding: 40px 10px 0 10px;
+    text-align: center;
+    position: relative;
+    .ci-file-navi {
+        position: absolute;
+        width: 50%;      
+        .btn-wrapper {
+            position: absolute;    
+            top: 50%;
+            margin-top: -28px;
+            display: none;
+
+            .theme--dark.v-btn.v-btn--has-bg {
+                opacity: 0.5;
+            }
+            
+        }  
+        &.ci-file-p {
+            width: 50%;        
+            height: 100%;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            .btn-wrapper {
+                left: 0;
+                margin-left: 20px;
+            }  
+        }
+        &.ci-file-n {
+            width: 50%;        
+            height: 100%;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            .btn-wrapper {
+                right: 0;
+                margin-right: 20px;
+            }  
+        }        
+    }
+
+    .ci-file-navi:hover {
+        cursor: pointer;
+        .btn-wrapper {
+            display: block;
+        }
+    }
+
+}
+.ci-selected-file {
+    border: 3px solid blue
+}

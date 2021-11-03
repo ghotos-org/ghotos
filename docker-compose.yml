@@ -1,0 +1,53 @@
+version: "3.8"
+
+#volumes:
+#  db_data: {}
+
+networks:
+  ghotos:
+
+services:
+  app:
+    container_name: ghotos_app_prod
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/app/prod.Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "4070:8080"
+    volumes:
+      - "./data:/data/ghoto"
+    depends_on:
+      - db
+    environment:
+      - LOCAL_USER_ID=1000
+    networks:
+      - ghotos      
+  db:
+    container_name: ghotos_db
+    restart: always
+    image: mariadb:10.6
+    volumes:
+      #- db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: mgr
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASS
+    ports:
+      - 4072:3306
+    networks:
+      - ghotos      
+  adminer:
+    container_name: ghotos_adminer
+    restart: always
+    image: adminer:4.8.1
+    ports:
+      - 4071:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    networks:
+      - ghotos      

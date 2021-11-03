@@ -1,0 +1,16 @@
+db_data
+db_data_dev
+/bin/*
+gin-bin
+/.env
+ghotos
+
+/.env.*
+!/.env.dev
+!/.env.example
+docker-compose.*
+!docker-compose.prod.yml
+!docker-compose.dev.yml
+!docker-compose.yml
+data
+data_dev
