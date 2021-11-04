@@ -8,7 +8,6 @@ import (
 	"ghotos/config"
 	"ghotos/server/app"
 	"ghotos/server/router"
-	lr "ghotos/util/logger"
 	vr "ghotos/util/validator"
 	"strconv"
 
@@ -18,10 +17,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jessevdk/go-flags"
-	"gorm.io/gorm"
+	"ghotos/util/logger/goose_logger"
 
-	"github.com/rs/zerolog/log"
+	"github.com/jessevdk/go-flags"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	//goose "github.com/pressly/goose"
 	_ "ghotos/migrations"
@@ -37,65 +37,67 @@ type ArgOptions struct {
 //go:embed migrations/*
 var embedMigrations embed.FS
 
-func migrate(db *gorm.DB, logger *lr.Logger, migrateCMD string, migrateArgs []string) (doExit bool) {
+func migrate(db *gorm.DB, migrateCMD string, migrateArgs []string) (doExit bool) {
 	appDb, err := db.DB()
 	if err != nil {
-		logger.Fatal().Err(err).Msg("")
+		log.Fatal(err)
 		return
 	}
 	goose_v3.SetBaseFS(embedMigrations)
 
+	goose_v3.SetLogger(goose_logger.New())
+
 	if err := goose_v3.SetDialect("mysql"); err != nil {
-		logger.Fatal().Err(err).Msg("")
+		log.Fatal(err)
 	}
 
 	if migrateCMD == "up" {
 		if err := goose_v3.Up(appDb, "migrations"); err != nil {
-			logger.Fatal().Err(err).Msg("")
+			log.Fatal(err)
 		}
 	}
 	if migrateCMD == "down" {
 		if err := goose_v3.Down(appDb, "migrations"); err != nil {
-			logger.Fatal().Err(err).Msg("")
+			log.Fatal(err)
 		}
 	}
 	if migrateCMD == "status" {
 		if err := goose_v3.Status(appDb, "migrations"); err != nil {
-			logger.Fatal().Err(err).Msg("")
+			log.Fatal(err)
 		}
 	}
 	if migrateCMD == "version" {
 		if err := goose_v3.Version(appDb, "migrations"); err != nil {
-			logger.Fatal().Err(err).Msg("")
+			log.Fatal(err)
 		}
 	}
 	if migrateCMD == "reset" {
 		if err := goose_v3.Reset(appDb, "migrations"); err != nil {
-			logger.Fatal().Err(err).Msg("")
+			log.Fatal(err)
 		}
 	}
 	if migrateCMD == "up-by-one" {
 		if err := goose_v3.Reset(appDb, "migrations"); err != nil {
-			logger.Fatal().Err(err).Msg("")
+			log.Fatal(err)
 		}
 	}
 	if migrateCMD == "up-to" || migrateCMD == "down-to" {
 		if len(migrateArgs) < 2 {
-			logger.Fatal().Err(err).Msg("Version fehlt")
+			log.Fatal("Version missing")
 			return true
 		}
 		version, err := strconv.ParseInt(migrateArgs[1], 10, 64)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("Version Format nicht korrekt")
+			log.WithError(err).Fatal("incorrect verison format")
 		}
 
 		if migrateCMD == "up-to" {
 			if err := goose_v3.UpTo(appDb, "migrations", version); err != nil {
-				logger.Fatal().Err(err).Msg("")
+				log.Fatal(err)
 			}
 		} else {
 			if err := goose_v3.DownTo(appDb, "migrations", version); err != nil {
-				logger.Fatal().Err(err).Msg("")
+				log.Fatal(err)
 			}
 		}
 
@@ -105,11 +107,11 @@ func migrate(db *gorm.DB, logger *lr.Logger, migrateCMD string, migrateArgs []st
 	}
 
 	if err := goose_v3.Up(appDb, "migrations"); err != nil {
-		logger.Fatal().Err(err).Msg("")
+		log.Fatal(err)
 	}
 
 	if err := goose_v3.Status(appDb, "migrations"); err != nil {
-		logger.Fatal().Err(err).Msg("")
+		log.Fatal(err)
 	}
 
 	return false
@@ -121,40 +123,52 @@ func main() {
 	var db *gorm.DB
 	var args []string
 
+	//log.SetReportCaller(true)
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors:   true,
+		FullTimestamp: true,
+	})
+	//log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.InfoLevel)
+	//log.SetOutput(os.Stdout)
+
 	args, err = flags.ParseArgs(&opts, os.Args)
 	if err != nil {
-		log.Error().Err(err).Msg("")
+		log.Fatal(err)
 		return
 	}
 	appConf := config.AppConfig(opts.Env)
-	logger := lr.New(appConf.Debug)
+	if appConf.Debug {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	// check DB Connection on Start 100 times
 	for i := 1; i <= 100; i++ {
 		db, err = dbConn.New(appConf)
 		if err != nil {
-			logger.Error().Stack().Err(err).Msg("")
+			log.Error(err)
 		} else {
 			break
 		}
 		time.Sleep(4 * time.Second)
 	}
 	if err != nil {
-		logger.Info().Msg("Stopped Trying DB Connection")
+		log.Info("Stopped Trying DB Connection")
 		return
 	}
 
-	if migrate(db, logger, opts.Migrate, args) {
-		logger.Info().Msg("Program exited")
+	if migrate(db, opts.Migrate, args) {
+		log.Info("Program exited")
 		return
 	}
 
 	validator := vr.New()
-	application := app.New(logger, db, validator, appConf)
+	application := app.New(db, validator, appConf)
 
 	appRouter := router.New(application)
 	address := fmt.Sprintf(":%d", appConf.Server.Port)
-	logger.Info().Msgf("Starting server %v", address)
+	log.Infof("Starting server %v", address)
+
 	srv := &http.Server{
 		Addr:         address,
 		Handler:      appRouter,
@@ -169,28 +183,26 @@ func main() {
 		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM)
 		<-sigint
 
-		logger.Info().Msgf("Shutting down server %v", address)
+		log.Info("Shutting down server")
 
 		ctx, cancel := context.WithTimeout(context.Background(), appConf.Server.TimeoutIdle)
 		defer cancel()
 
 		if err := srv.Shutdown(ctx); err != nil {
-			logger.Warn().Err(err).Msg("Server shutdown failure")
+			log.WithField("error", err).Warn("Server shutdown failure")
 		}
 
 		sqlDB, err := db.DB()
 		if err == nil {
 			if err = sqlDB.Close(); err != nil {
-				logger.Warn().Err(err).Msg("Db connection closing failure")
+				log.WithField("error", err).Warn("Db connection closing failure")
 			}
 		}
 
 		close(closed)
 	}()
-
-	logger.Info().Msgf("Starting server %v", address)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		logger.Fatal().Err(err).Msg("Server startup failure")
+		log.WithField("error", err).Warn("Server startup failure")
 	}
 
 	<-closed

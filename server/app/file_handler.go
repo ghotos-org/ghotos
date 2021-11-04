@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"ghotos/model"
 	"ghotos/repository"
@@ -20,20 +21,14 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/h2non/bimg"
 	"github.com/segmentio/ksuid"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
-
-func printError(app *App, w http.ResponseWriter, err error, status int, msg string) {
-	app.logger.Error().Err(err).Msg("")
-	w.WriteHeader(http.StatusInternalServerError)
-	fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
-
-}
 
 func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 	uid := chi.URLParam(r, "uid")
 	if uid == "" {
-		app.logger.Info().Msgf("can not parse UID: %v", uid)
+		log.Infof("can not parse UID: %v", uid)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
@@ -43,7 +38,8 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
+
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
 		return
@@ -57,7 +53,8 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 	fileSimple := modelFile.ToDtoSimple()
 	fileSimple.Src = &src
 	if err := json.NewEncoder(w).Encode(fileSimple); err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
+
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
 		return
@@ -68,17 +65,19 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 func (app *App) HandleDeleteFile(w http.ResponseWriter, r *http.Request) {
 	uid := chi.URLParam(r, "uid")
 	if uid == "" {
-		app.logger.Info().Msgf("can not parse UID: %v", uid)
+		log.Infof("can not parse UID: %s", uid)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		return
 	}
 	if err := repository.DeleteFile(app.db, uid, app.User().UID); err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
+
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
 		return
 	}
-	app.logger.Info().Msgf("File deleted: %d", uid)
+	log.Infof("File deleted: %s", uid)
+
 	w.WriteHeader(http.StatusAccepted)
 }
 
@@ -114,19 +113,27 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 	filePath, err := repository.DecodePath(src)
 	if err != nil {
 		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		return
+
 	}
 
 	file, err := repository.ReadFile(app.db, filePath.UID)
 	if err != nil {
 		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		return
 	}
 
 	eTag := file.UpdatedAt.Format("20060102150405000") + "_" + strconv.Itoa(width) + "_" + strconv.Itoa(height) + "_" + file.UID
 
 	bufferOrg, err := bimg.Read(file.Path + "/" + file.Filename)
 	imageOrg := bimg.NewImage(bufferOrg)
+	if imageOrg.Image() == nil {
+		printError(app, w, errors.New("image not exists"), http.StatusInternalServerError, "image not exists")
+		return
+	}
 	if !bimg.IsTypeNameSupported(imageOrg.Type()) {
 		printError(app, w, err, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!")
+		return
 	}
 
 	quality := 100
@@ -154,9 +161,16 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	image, err := imageOrg.Process(options)
+	if err != nil {
+		printError(app, w, err, http.StatusInternalServerError, "file Not Ressizeable")
+		return
+
+	}
 
 	if !bimg.IsTypeNameSupported(imageOrg.Type()) {
-		printError(app, w, err, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!")
+		printError(app, w, nil, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!")
+		return
+
 	}
 
 	e := `"` + eTag + `"`
@@ -294,14 +308,14 @@ func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 		printError(app, w, err, http.StatusInternalServerError, appErrDataCreationFailure)
 		return
 	}
-	app.logger.Info().Msgf("New File created: %d", file.UID)
+	log.Infof("New File created: %s", file.UID)
 
 	/*
 		str, err1 := repository.EncodePath(*file)
 		if err1 != nil {
 			app.logger.Warn().Err(err1).Msg("")
 		}
-		app.logger.Info().Msgf("path: %s", str)
+		log.Infof(path: %s", str)
 	*/
 	w.WriteHeader(http.StatusCreated)
 }

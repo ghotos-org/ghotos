@@ -2,18 +2,18 @@ package router
 
 import (
 	"ghotos/server/app"
-	"ghotos/server/requestlog"
-
-	"ghotos/server/app/middleware"
 
 	"github.com/go-chi/chi"
+
+	//"github.com/go-chi/chi/v5/middleware"
+	"ghotos/server/app/middleware"
+
 	"github.com/go-chi/cors"
 )
 
 func New(a *app.App) *chi.Mux {
-	l := a.Logger()
 	r := chi.NewRouter()
-
+	r.Use(middleware.Logger("", nil))
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
 		//AllowedOrigins: []string{"https://*", "http://*"},
@@ -26,42 +26,62 @@ func New(a *app.App) *chi.Mux {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	//r.Method("GET", "/", requestlog.NewHandler(a.HandleIndex, l))
-	r.Method("GET", "/test", requestlog.NewHandler(a.HandleIndex2, l))
-	//r.Get("/healthz/liveness", app.HandleLive)
-	//r.Method("GET", "/healthz/readiness", requestlog.NewHandler(a.HandleReady, l))
-	// Routes for healthz
-	r.Get("/healthz", app.HandleHealth)
-
-	// Routes for books
+	r.Get("/", a.HandleIndex)
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(middleware.ContentTypeJson)
-		r.Method("POST", "/auth/login", requestlog.NewHandler(a.HandleAuthLogin, l))
-		r.Method("POST", "/auth/refresh", requestlog.NewHandler(a.HandleAuthRefresh, l))
 
-		// Routes for books
-		r.Group(func(r chi.Router) {
-			r.Method("GET", "/books", requestlog.NewHandler(a.HandleListBooks, l))
-			r.Method("POST", "/books", requestlog.NewHandler(a.HandleCreateBook, l))
-			r.Method("GET", "/books/{id}", requestlog.NewHandler(a.HandleReadBook, l))
-			r.Method("PUT", "/books/{id}", requestlog.NewHandler(a.HandleUpdateBook, l))
-			r.Method("DELETE", "/books/{id}", requestlog.NewHandler(a.HandleDeleteBook, l))
-		})
+		r.Post("/auth/login", a.HandleAuthLogin)
+		r.Post("/auth/refresh", a.HandleAuthRefresh)
 
-		r.Method("GET", "/f/{src}", requestlog.NewHandler(a.HandleShowFile, l))
+		r.Get("/f/{src}", a.HandleShowFile)
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuth(a))
-			r.Method("GET", "/gallery", requestlog.NewHandler(a.HandleGallery, l))
-			r.Method("GET", "/gallery/{day}", requestlog.NewHandler(a.HandleListGalleryDayFile, l))
-			r.Method("POST", "/file", requestlog.NewHandler(a.HandleCreateFile, l))
-			r.Method("DELETE", "/file/{uid}", requestlog.NewHandler(a.HandleDeleteFile, l))
-			r.Method("GET", "/file/src/{uid}", requestlog.NewHandler(a.HandleReadFile, l))
+			r.Get("/gallery", a.HandleGallery)
+			r.Get("/gallery/{day}", a.HandleListGalleryDayFile)
+			r.Post("/file", a.HandleCreateFile)
+			r.Delete("/file/{uid}", a.HandleDeleteFile)
+			r.Get("/file/src/{uid}", a.HandleReadFile)
 		})
 
-		r.Method("GET", "/auth/logout", requestlog.NewHandler(a.HandleAuthLogout, l))
-
 	})
+	/*
+		//r.Method("GET", "/", a.HandleIndex)
+		r.Method("GET", "/test", a.HandleIndex2)
+		//r.Get("/healthz/liveness", app.HandleLive)
+		//r.Method("GET", "/healthz/readiness", a.HandleReady)
+		// Routes for healthz
+		r.Get("/healthz", app.HandleHealth)
+
+		// Routes for books
+		r.Route("/api/v1", func(r chi.Router) {
+			r.Use(middleware.ContentTypeJson)
+			r.Method("POST", "/auth/login", a.HandleAuthLogin)
+			r.Method("POST", "/auth/refresh", a.HandleAuthRefresh)
+
+			// Routes for books
+			r.Group(func(r chi.Router) {
+				r.Method("GET", "/books", a.HandleListBooks)
+				r.Method("POST", "/books", a.HandleCreateBook)
+				r.Method("GET", "/books/{id}", a.HandleReadBook)
+				r.Method("PUT", "/books/{id}", a.HandleUpdateBook)
+				r.Method("DELETE", "/books/{id}", a.HandleDeleteBook)
+			})
+
+			r.Method("GET", "/f/{src}", a.HandleShowFile)
+
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.JWTAuth(a))
+				r.Method("GET", "/gallery", a.HandleGallery)
+				r.Method("GET", "/gallery/{day}", a.HandleListGalleryDayFile)
+				r.Method("POST", "/file", a.HandleCreateFile)
+				r.Method("DELETE", "/file/{uid}", a.HandleDeleteFile)
+				r.Method("GET", "/file/src/{uid}", a.HandleReadFile)
+			})
+
+			r.Method("GET", "/auth/logout", a.HandleAuthLogout)
+
+		})
+	*/
 
 	r.Handle("/*", app.HandleClient())
 

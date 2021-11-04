@@ -22,6 +22,8 @@ services:
       - db
     networks:
       - ghotos_dev
+    stdin_open: true      
+    tty: true         
   client:
     image: ghotos_client
     build:

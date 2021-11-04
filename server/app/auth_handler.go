@@ -7,21 +7,23 @@ import (
 	"ghotos/repository"
 	"ghotos/server/service"
 	"ghotos/util/validator"
-	"log"
+
+	log "github.com/sirupsen/logrus"
+
 	"net/http"
 )
 
 func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 	form := &model.UserLoginForm{}
 	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
 
 	if err := app.validator.Struct(form); err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
 		resp := validator.ToErrResponse(err)
 		if resp == nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -30,7 +32,7 @@ func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		respBody, err := json.Marshal(resp)
 		if err != nil {
-			app.logger.Warn().Err(err).Msg("")
+			log.Warn(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
 			return
@@ -42,7 +44,7 @@ func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := repository.LoginUser(app.db, form.Email, form.Password)
 	if err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		//log.Warn(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataCreationFailure)
 		return
@@ -56,11 +58,8 @@ func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.logger.Info().Msgf("User Login: %d", user.UID)
-	app.logger.Info().Msgf("User Token: %d", token.AccessToken)
-
 	if err := json.NewEncoder(w).Encode(token); err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
 		return
@@ -74,7 +73,7 @@ func (app *App) HandleAuthRefresh(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("body: %d", r.Context())
 	if err := json.NewDecoder(r.Body).Decode(&token); err != nil {
-		app.logger.Warn().Err(err).Msg("")
+		log.Warn(err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
 		return

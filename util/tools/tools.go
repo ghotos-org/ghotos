@@ -10,6 +10,12 @@ import (
 )
 
 //var commonIV = []byte("GEbJOVHUONrWInXe")
+func Min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
 
 func MakeTimestamp(t time.Time) int64 {
 	return t.UnixNano() / int64(time.Millisecond)
