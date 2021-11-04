@@ -21,6 +21,7 @@ require (
 	github.com/pressly/goose/v3 v3.3.1
 	github.com/rs/zerolog v1.25.0
 	github.com/segmentio/ksuid v1.0.4
+	github.com/sirupsen/logrus v1.8.1
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 	gorm.io/driver/mysql v1.1.3
 	gorm.io/gorm v1.22.2
