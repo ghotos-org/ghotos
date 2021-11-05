@@ -71,8 +71,12 @@ export const auth = {
     register({ commit }, user) {
       return AuthService.register(user).then(
         response => {
-          commit('registerSuccess');
-          return Promise.resolve(response.data);
+          if (response.status == 201){
+            commit('registerSuccess');
+            return Promise.resolve(true);
+          }
+          commit('registerFailure');
+          return Promise.reject(new Error("wrong server response"));                 
         },
         error => {
           commit('registerFailure');

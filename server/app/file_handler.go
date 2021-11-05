@@ -41,12 +41,12 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	src, err := repository.EncodePath(*modelFile)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (app *App) HandleDeleteFile(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	log.Infof("File deleted: %s", uid)
@@ -86,7 +86,7 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 
 	fileOptions := strings.Join(strings.Split(srcParam, "=")[1:], "=")
 	if fileOptions == "" {
-		printError(app, w, nil, http.StatusInternalServerError, "fileOptions ist LEER!")
+		printError(app, w, http.StatusInternalServerError, "fileOptions ist LEER!", nil)
 		return
 
 	}
@@ -99,27 +99,27 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 
 	width, err := strconv.Atoi(widthStr)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, "Width nicht vorhanden")
+		printError(app, w, http.StatusInternalServerError, "Width nicht vorhanden", err)
 		return
 	}
 
 	height, err := strconv.Atoi(heightStr)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, "Heiht nicht vorhanden")
+		printError(app, w, http.StatusInternalServerError, "Heiht nicht vorhanden", err)
 		return
 
 	}
 	src := strings.Split(srcParam, "=")[0]
 	filePath, err := repository.DecodePath(src)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 
 	}
 
 	file, err := repository.ReadFile(app.db, filePath.UID)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
@@ -128,11 +128,11 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 	bufferOrg, err := bimg.Read(file.Path + "/" + file.Filename)
 	imageOrg := bimg.NewImage(bufferOrg)
 	if imageOrg.Image() == nil {
-		printError(app, w, errors.New("image not exists"), http.StatusInternalServerError, "image not exists")
+		printError(app, w, http.StatusInternalServerError, "image not exists", errors.New("image not exists"))
 		return
 	}
 	if !bimg.IsTypeNameSupported(imageOrg.Type()) {
-		printError(app, w, err, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!")
+		printError(app, w, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!", err)
 		return
 	}
 
@@ -162,13 +162,13 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 
 	image, err := imageOrg.Process(options)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, "file Not Ressizeable")
+		printError(app, w, http.StatusInternalServerError, "file Not Ressizeable", err)
 		return
 
 	}
 
 	if !bimg.IsTypeNameSupported(imageOrg.Type()) {
-		printError(app, w, nil, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!")
+		printError(app, w, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!", nil)
 		return
 
 	}
@@ -198,31 +198,31 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 	uploadedFile, multipartFileHeader, err := r.FormFile("file")
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 	// Create a buffer to store the header of the file in
 	fileHeader := make([]byte, 512)
 	// Copy the headers into the FileHeader buffer
 	if _, err := uploadedFile.Read(fileHeader); err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 	// set position back to start.
 	if _, err := uploadedFile.Seek(0, 0); err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
 	buf := bytes.NewBuffer(nil)
 	if _, err := io.Copy(buf, uploadedFile); err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
 	orgImage := bimg.NewImage(buf.Bytes())
 	if !bimg.IsTypeNameSupported(orgImage.Type()) {
-		printError(app, w, err, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!")
+		printError(app, w, http.StatusInternalServerError, "Dateityp wird nicht unterstützt!", nil)
 		return
 	}
 
@@ -247,11 +247,11 @@ func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 
 	mount, err := repository.ActiveMount(app.db)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 	if mount.ID == 0 {
-		printError(app, w, err, http.StatusInternalServerError, "No Mount defined!")
+		printError(app, w, http.StatusInternalServerError, "No Mount defined!", err)
 		return
 	}
 
@@ -281,7 +281,7 @@ func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 	}
 	newImage, err := orgImage.Process(options)
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
@@ -292,7 +292,7 @@ func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 
 	filepath := fileModel.Path + "/" + fileModel.Filename
 	if err = bimg.Write(filepath, newImage); err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
@@ -305,7 +305,7 @@ func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 	file, err := repository.CreateFile(app.db, fileModel)
 
 	if err != nil {
-		printError(app, w, err, http.StatusInternalServerError, appErrDataCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrDataCreationFailure, err)
 		return
 	}
 	log.Infof("New File created: %s", file.UID)

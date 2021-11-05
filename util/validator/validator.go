@@ -15,7 +15,12 @@ const (
 )
 
 type ErrResponse struct {
-	Errors []string `json:"errors"`
+
+	//Errors []string `json:"errors"`
+	Error struct {
+		Message string                 `json:"message,omitempty"`
+		Fields  map[string]interface{} `json:"fields,omitempty"`
+	} `json:"error"`
 }
 
 func isAlphaSpace(fl validator.FieldLevel) bool {
@@ -30,13 +35,16 @@ func isDate(fl validator.FieldLevel) bool {
 func New() *validator.Validate {
 	validate := validator.New()
 	validate.SetTagName("form")
+
 	// Using the names which have been specified for JSON representations of structs, rather than normal Go field names
 
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+
 		if name == "-" {
 			return ""
 		}
+
 		return name
 	})
 
@@ -45,7 +53,54 @@ func New() *validator.Validate {
 
 	return validate
 }
+func ErrorMsg(msg string) *ErrResponse {
+	resp := ErrResponse{}
+	resp.Error.Message = msg
+	return &resp
+
+}
+func ToErrResponse(err error, msg *string) *ErrResponse {
+
+	if fieldErrors, ok := err.(validator.ValidationErrors); ok {
+		/*
+			resp := ErrResponse{
+				Errors: make(map[string]interface{}),
+			}
+		*/
+		resp := ErrResponse{}
+		resp.Error.Fields = make(map[string]interface{})
+		if msg != nil {
+			resp.Error.Message = *msg
+		}
+
+		for _, err := range fieldErrors {
+			switch err.Tag() {
+			case "required":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s is a required field", err.Field())
+			case "max":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s must be a maximum of %s in length", err.Field(), err.Param())
+			case "min":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s must be a minimum of %s in length", err.Field(), err.Param())
+			case "url":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s must be a valid URL", err.Field())
+			case "email":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s must be a valid email address", err.Field())
+			case "alpha_space":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s can only contain alphabetic and space characters", err.Field())
+			case "date":
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("%s must be a valid date", err.Field())
+			default:
+				resp.Error.Fields[err.Field()] = fmt.Sprintf("something wrong on %s; %s", err.Field(), err.Tag())
+			}
+		}
+		return &resp
+	}
+	return nil
+}
+
+/*
 func ToErrResponse(err error) *ErrResponse {
+
 	if fieldErrors, ok := err.(validator.ValidationErrors); ok {
 		resp := ErrResponse{
 			Errors: make([]string, len(fieldErrors)),
@@ -56,8 +111,12 @@ func ToErrResponse(err error) *ErrResponse {
 				resp.Errors[i] = fmt.Sprintf("%s is a required field", err.Field())
 			case "max":
 				resp.Errors[i] = fmt.Sprintf("%s must be a maximum of %s in length", err.Field(), err.Param())
+			case "min":
+				resp.Errors[i] = fmt.Sprintf("%s must be a minimum of %s in length", err.Field(), err.Param())
 			case "url":
 				resp.Errors[i] = fmt.Sprintf("%s must be a valid URL", err.Field())
+			case "email":
+				resp.Errors[i] = fmt.Sprintf("%s must be a valid email address", err.Field())
 			case "alpha_space":
 				resp.Errors[i] = fmt.Sprintf("%s can only contain alphabetic and space characters", err.Field())
 			case "date":
@@ -66,7 +125,72 @@ func ToErrResponse(err error) *ErrResponse {
 				resp.Errors[i] = fmt.Sprintf("something wrong on %s; %s", err.Field(), err.Tag())
 			}
 		}
+
 		return &resp
 	}
 	return nil
 }
+
+*/
+/*
+func ToErrResponse2(err error, obj interface{}) *ErrResponse {
+
+		fmt.Println(err.Namespace()) // can differ when a custom TagNameFunc is registered or
+		fmt.Println(err.Field())     // by passing alt name to ReportError like below
+		fmt.Println(err.StructNamespace())
+		fmt.Println(err.StructField())
+		fmt.Println(err.Tag())
+		fmt.Println(err.ActualTag())
+		fmt.Println(err.Kind())
+		fmt.Println(err.Type())
+		fmt.Println(err.Value())
+		fmt.Println(err.Param())
+		fmt.Println(err.StructField())
+
+	if fieldErrors, ok := err.(validator.ValidationErrors); ok {
+		resp := ErrResponse{
+			Errors: make([]string, len(fieldErrors)),
+		}
+		for i, err := range fieldErrors {
+			switch err.Tag() {
+			case "required":
+				resp.Errors[i] = fmt.Sprintf("%s is a required field", err.Field())
+			case "max":
+				resp.Errors[i] = fmt.Sprintf("%s must be a maximum of %s in length", err.Field(), err.Param())
+			case "min":
+				resp.Errors[i] = fmt.Sprintf("%s must be a minimum of %s in length", err.Field(), err.Param())
+				log.Printf("TEST: %v must be a valid email address", err.StructField())
+
+				field, _ := reflect.TypeOf(err.StructField()).Elem().FieldByName(err.Field())
+				log.Printf("TEST222: %v ", field)
+
+				fmt.Println(err.Namespace()) // can differ when a custom TagNameFunc is registered or
+				fmt.Println(err.Field())     // by passing alt name to ReportError like below
+				fmt.Println(err.StructNamespace())
+				fmt.Println(err.StructField())
+				fmt.Println(err.Tag())
+				fmt.Println(err.ActualTag())
+				fmt.Println(err.Kind())
+				fmt.Println(err.Type())
+				fmt.Println(err.Value())
+				fmt.Println(err.Param())
+				fmt.Println(err.StructField())
+
+			case "url":
+				resp.Errors[i] = fmt.Sprintf("%s must be a valid URL", err.Field())
+			case "email":
+				resp.Errors[i] = fmt.Sprintf("%s must be a valid email address", err.Field())
+			case "alpha_space":
+				resp.Errors[i] = fmt.Sprintf("%s can only contain alphabetic and space characters", err.Field())
+			case "date":
+				resp.Errors[i] = fmt.Sprintf("%s must be a valid date", err.Field())
+			default:
+				resp.Errors[i] = fmt.Sprintf("something wrong on %s; %s", err.Field(), err.Tag())
+			}
+		}
+
+		return &resp
+	}
+	return nil
+}
+*/

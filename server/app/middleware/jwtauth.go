@@ -16,14 +16,14 @@ func JWTAuth(a *app.App) func(next http.Handler) http.Handler {
 			token := strings.Split(bearerToken, " ")
 			if len(token) != 2 {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(w, `{"error": "%v"}`, "missing token")
+				fmt.Fprintf(w, `{"error.message": "%v"}`, "missing token")
 				return
 			}
 			jwt := service.Jwt{}
 			user, err := jwt.ValidateToken(token[1])
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(w, `{"error": "%v"}`, "invalid token")
+				fmt.Fprintf(w, `{"error.message": "%v"}`, "invalid token")
 				return
 			}
 			a.SetUser(user)

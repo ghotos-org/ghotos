@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users
     uid            CHAR(27)     NOT NULL,
     id             INT          NOT NULL AUTO_INCREMENT,
     email          VARCHAR(255) NOT NULL,
+    status         INT          NOT NULL,
     password       VARCHAR(255) NOT NULL,
     created_at     TIMESTAMP    NOT NULL,
     updated_at     TIMESTAMP    NULL,
@@ -13,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users
     UNIQUE KEY(id) 
 );
 
-INSERT INTO users (uid,email,password,created_at) VALUES("200KPME8UZ4tjpP0IqMyyAizmsy", "system@bluffy.de","mgr", NOW());
+INSERT INTO users (uid,status,email,password,created_at) VALUES("200KPME8UZ4tjpP0IqMyyAizmsy", 1, "system@bluffy.de","mgr", NOW());
 COMMIT;
 
 -- +goose Down

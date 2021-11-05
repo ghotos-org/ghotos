@@ -1,5 +1,6 @@
 <template>
-  <v-app id="ci-login"   >
+  <v-app id="ci-login">
+    <Header title="Ghotos: Login" />
     <v-main class="ci-app-content">
       <v-container>
      
@@ -23,9 +24,12 @@
                     type="password"
                     v-model="password" 
                     ></v-text-field>
+                   
+
                 
                 </v-card-text>
                 <v-card-actions>
+                    <router-link  :to="'/register'"><span small>Create Account</span></router-link> | <router-link :to="'/password'">New Password</router-link>
                     <v-spacer></v-spacer>
                     <v-btn color="primary" type="submit">Login</v-btn>
                 </v-card-actions>
@@ -42,6 +46,7 @@
 <script>
 
 //import { mapGetters } from "vuex";
+import Header from "@/components/layouts/HeaderAuth.vue";
 export default {
   data(){
     return {
@@ -51,7 +56,9 @@ export default {
       message: ""      
     }    
   },
-
+  components: {
+    Header
+  },
   mounted(){
    // console.log(this.$store.state.auth.user)
   },

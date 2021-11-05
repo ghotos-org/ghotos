@@ -18,8 +18,8 @@ class AuthService {
   }
 
   register(user) {
-    return ApiService.post("/auth/register", user).then(() => {
-      return Promise.resolve();
+    return ApiService.post("/auth/signup", user).then((response) => {
+      return Promise.resolve(response);
     }); 
   }
 }

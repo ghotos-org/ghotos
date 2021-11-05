@@ -18,6 +18,7 @@ require (
 	github.com/jinzhu/copier v0.3.2 // indirect
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
 	github.com/joho/godotenv v1.4.0
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/mattn/go-shellwords v1.0.12 // indirect
 	github.com/onrik/gorm-logrus v0.3.0 // indirect
 	github.com/pressly/goose v2.7.0+incompatible // indirect

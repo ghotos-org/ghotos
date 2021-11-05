@@ -22,7 +22,7 @@ func (app *App) HandleListBooks(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	if books == nil {
@@ -34,7 +34,7 @@ func (app *App) HandleListBooks(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 		return
 	}
 }
@@ -54,7 +54,7 @@ func (app *App) HandleReadBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	dto := book.ToDto()
@@ -62,7 +62,7 @@ func (app *App) HandleReadBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 		return
 	}
 }
@@ -78,7 +78,7 @@ func (app *App) HandleDeleteBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	log.Infof("Book deleted: %d", id)
@@ -91,17 +91,17 @@ func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
 
 	if err := app.validator.Struct(form); err != nil {
 		log.Warn(err)
 
-		resp := validator.ToErrResponse(err)
+		resp := validator.ToErrResponse(err, nil)
 		if resp == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error": "%v"}`, appErrFormErrResponseFailure)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormErrResponseFailure)
 			return
 		}
 		respBody, err := json.Marshal(resp)
@@ -109,7 +109,7 @@ func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) {
 			log.Warn(err)
 
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 			return
 		}
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -122,7 +122,7 @@ func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
 	book, err := repository.CreateBook(app.db, bookModel)
@@ -130,7 +130,7 @@ func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataCreationFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataCreationFailure)
 		return
 	}
 	log.Infof("New book created: %d", book.ID)
@@ -149,17 +149,17 @@ func (app *App) HandleUpdateBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
 
 	if err := app.validator.Struct(form); err != nil {
 		log.Warn(err)
 
-		resp := validator.ToErrResponse(err)
+		resp := validator.ToErrResponse(err, nil)
 		if resp == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error": "%v"}`, appErrFormErrResponseFailure)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormErrResponseFailure)
 			return
 		}
 		respBody, err := json.Marshal(resp)
@@ -167,7 +167,7 @@ func (app *App) HandleUpdateBook(w http.ResponseWriter, r *http.Request) {
 			log.Warn(err)
 
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 			return
 		}
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -180,7 +180,7 @@ func (app *App) HandleUpdateBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrFormDecodingFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormDecodingFailure)
 		return
 	}
 	bookModel.ID = uint(id)
@@ -192,7 +192,7 @@ func (app *App) HandleUpdateBook(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataUpdateFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataUpdateFailure)
 		return
 	}
 	log.Infof("Book updated: %d", id)

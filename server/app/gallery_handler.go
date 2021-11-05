@@ -18,7 +18,7 @@ func (app *App) HandleGallery(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	if gallery.Days == nil {
@@ -30,7 +30,7 @@ func (app *App) HandleGallery(w http.ResponseWriter, r *http.Request) {
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 		return
 	}
 }
@@ -42,7 +42,7 @@ func (app *App) HandleListGalleryDayFile(w http.ResponseWriter, r *http.Request)
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 		return
 	}
 	if files == nil {
@@ -57,7 +57,7 @@ func (app *App) HandleListGalleryDayFile(w http.ResponseWriter, r *http.Request)
 			log.Warn(err)
 
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error": "%v"}`, appErrDataAccessFailure)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
 			return
 		}
 		fileSrc := model.FilesSrc{}
@@ -73,7 +73,7 @@ func (app *App) HandleListGalleryDayFile(w http.ResponseWriter, r *http.Request)
 		log.Warn(err)
 
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error": "%v"}`, appErrJsonCreationFailure)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
 		return
 	}
 

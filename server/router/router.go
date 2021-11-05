@@ -25,11 +25,14 @@ func New(a *app.App) *chi.Mux {
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 
-	r.Get("/", a.HandleIndex)
+	//r.Get("/", a.HandleIndex)
 	r.Get("/healthz", app.HandleHealth)
+	//r.Get("/auth/activate/{io}", app.HandleAuthActivate)
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/auth/login", a.HandleAuthLogin)
 		r.Post("/auth/refresh", a.HandleAuthRefresh)
+		r.Post("/auth/signup", a.HandleAuthSignup)
 
 		r.Get("/f/{src}", a.HandleShowFile)
 

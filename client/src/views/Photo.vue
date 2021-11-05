@@ -8,11 +8,12 @@
         <v-toolbar-title>
       
         </v-toolbar-title>
+        <v-spacer />
           <v-toolbar-items>
-            <v-btn dark text @click="onClickDelete()"><v-icon dark>mdi-delete</v-icon></v-btn>
+            <v-btn  text @click="onClickDelete()"><v-icon dark>mdi-delete</v-icon></v-btn>
             <v-menu bottom left>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn dark icon v-bind="attrs" v-on="on" >
+              <v-btn  icon v-bind="attrs" v-on="on" >
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
             </template>

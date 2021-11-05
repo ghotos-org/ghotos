@@ -14,9 +14,11 @@ type Conf struct {
 	Server serverConf
 	Db     dbConf
 	File   fileConf
+	SMTP   smtpConf
 }
 type serverConf struct {
 	Port         int           `env:"SERVER_PORT,required"`
+	PublicUrl    string        `env:"SERVER_PUBLIC_URL,required"`
 	TimeoutRead  time.Duration `env:"SERVER_TIMEOUT_READ,required"`
 	TimeoutWrite time.Duration `env:"SERVER_TIMEOUT_WRITE,required"`
 	TimeoutIdle  time.Duration `env:"SERVER_TIMEOUT_IDLE,required"`
@@ -28,6 +30,14 @@ type dbConf struct {
 	Username string `env:"DB_USER,required"`
 	Password string `env:"DB_PASS,required"`
 	DbName   string `env:"DB_NAME,required"`
+}
+
+type smtpConf struct {
+	Host     string `env:"SMTP_HOST"`
+	User     string `env:"SMTP_USER"`
+	Password string `env:"SMTP_PASSWORD"`
+	Port     int    `env:"SMTP_PORT"`
+	Sender   string `env:"SMTP_SENDER"`
 }
 
 type fileConf struct {
