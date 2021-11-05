@@ -22,6 +22,10 @@ export const router = new Router({
             component: Login
         },
         {
+            path: '/register',
+            component: () => import("@/views/Register"),
+        },
+        {
             path: "/photo/:file",
             name: "photo",
             meta: {

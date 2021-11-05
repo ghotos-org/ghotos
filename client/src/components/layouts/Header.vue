@@ -170,12 +170,9 @@ export default {
     logout() {
       this.$store.dispatch("auth/logout").then(()=>{
         this.$router.push('/login');
+      },() => {
+        this.$router.push('/login');
       });
-      /*
-      this.$store.dispatch(LOGOUT).then(() => {
-        this.$router.push({ name: "login" });
-      });
-      */
     },   
    async onChangeSelectFiles(e) {
       let files = e.target.files

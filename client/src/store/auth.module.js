@@ -15,7 +15,7 @@ function decodeTokens(token){
       }  
     }
   }catch(e){
-    console.log(e)    
+    //console.log(e)    
   }
   return null
 }
@@ -93,7 +93,7 @@ export const auth = {
     logout(state) {
       state.loggedIn = false;
       state.user = null;
-      console.log("TEST2222222222222222222")
+      
       StorageService.clearToken()
     },
     registerSuccess(state) {

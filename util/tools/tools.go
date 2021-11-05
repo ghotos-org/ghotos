@@ -3,8 +3,10 @@ package tools
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha256"
 	"errors"
+	"io"
 	"log"
 	"time"
 )
@@ -38,6 +40,17 @@ func Encrypt(plaintext []byte, key []byte, iv string) (ciphertext []byte, err er
 	log.Printf("%v", len(iv))
 
 	nonce := []byte(iv[15:27])
+
+	if iv == "" {
+		_, err = io.ReadFull(rand.Reader, nonce)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		nonce = []byte(iv[15:27])
+
+	}
+
 	//log.Printf("%v", len(iv[15:27]))
 	//nonce := make([]byte, gcm.NonceSize())
 	//nonce := commonIV

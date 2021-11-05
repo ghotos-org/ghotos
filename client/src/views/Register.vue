@@ -23,6 +23,13 @@
                     type="password"
                     v-model="password" 
                     ></v-text-field>
+                    <v-text-field
+                    id="password_check"
+                    prepend-icon="mdi-lock"
+                    label="Password Check"
+                    type="password_check"
+                    v-model="password" 
+                    ></v-text-field>
                 
                 </v-card-text>
                 <v-card-actions>
@@ -47,6 +54,7 @@ export default {
     return {
       email : "",
       password : "",
+      password_check : "",
       loading: false,
       message: ""      
     }    
@@ -59,21 +67,16 @@ export default {
     login: function () {
       let email = this.email
       let password = this.password
-      this.$store.dispatch('auth/login', { email, password })
+      this.$store.dispatch('auth/register', { email, password })
       .then(
         () => this.$router.push('/'),
         error => {
             this.loading = false;
-            let text =
+            this.message =
             (error.response && error.response.data && error.response.data.message) ||
             error.message ||
             error.toString();
-            this.$dialog.info({
-              title: "Error",
-              text
-            })            
         }
-
       )
     }
   },  

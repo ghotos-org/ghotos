@@ -22,7 +22,7 @@ require (
 	github.com/onrik/gorm-logrus v0.3.0 // indirect
 	github.com/pressly/goose v2.7.0+incompatible // indirect
 	github.com/pressly/goose/v3 v3.3.1
-	github.com/rs/zerolog v1.26.0
+	github.com/rs/zerolog v1.26.0 // indirect
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect

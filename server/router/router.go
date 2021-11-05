@@ -3,10 +3,9 @@ package router
 import (
 	"ghotos/server/app"
 
-	"github.com/go-chi/chi"
-
-	//"github.com/go-chi/chi/v5/middleware"
 	"ghotos/server/app/middleware"
+
+	"github.com/go-chi/chi"
 
 	"github.com/go-chi/cors"
 )
@@ -27,8 +26,8 @@ func New(a *app.App) *chi.Mux {
 	}))
 
 	r.Get("/", a.HandleIndex)
+	r.Get("/healthz", app.HandleHealth)
 	r.Route("/api/v1", func(r chi.Router) {
-
 		r.Post("/auth/login", a.HandleAuthLogin)
 		r.Post("/auth/refresh", a.HandleAuthRefresh)
 
@@ -36,6 +35,7 @@ func New(a *app.App) *chi.Mux {
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.JWTAuth(a))
+			r.Get("/auth/logout", a.HandleAuthLogout)
 			r.Get("/gallery", a.HandleGallery)
 			r.Get("/gallery/{day}", a.HandleListGalleryDayFile)
 			r.Post("/file", a.HandleCreateFile)
