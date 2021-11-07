@@ -39,7 +39,7 @@ func Encrypt(plaintext []byte, key []byte, iv string) (ciphertext []byte, err er
 	}
 	log.Printf("%v", len(iv))
 
-	nonce := []byte(iv[15:27])
+	nonce := make([]byte, 12)
 
 	if iv == "" {
 		_, err = io.ReadFull(rand.Reader, nonce)

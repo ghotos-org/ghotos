@@ -1,16 +1,19 @@
 package app
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"ghotos/model"
 	"ghotos/repository"
 	"ghotos/server/service"
 	"ghotos/util/mail"
+	"ghotos/util/tools"
 	"ghotos/util/validator"
+	"time"
 
+	"github.com/go-chi/chi"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 
 	"net/http"
 )
@@ -69,6 +72,88 @@ func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (app *App) HandleSignUpCheckMail(w http.ResponseWriter, r *http.Request) {
+	form := &model.UserRegisterEmailForm{}
+	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
+		return
+	}
+	if err := app.validator.Struct(form); err != nil {
+		log.Warn(err)
+		resp := validator.ToErrResponse(err, nil)
+		if resp == nil {
+			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
+			return
+		}
+		respBody, err := json.Marshal(resp)
+		if err != nil {
+			log.Warn(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
+			return
+		}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(respBody)
+		return
+	}
+
+	// todo:
+	// check if email existes, if, then send mail with password forogot
+
+	form.Date = time.Now()
+	formBytes, err := json.Marshal(form)
+	if err != nil {
+		printError(app, w, http.StatusUnprocessableEntity, "", err)
+		return
+	}
+	textByte, err := tools.Encrypt(formBytes, []byte(app.conf.Server.TokenKey), "")
+	if err != nil {
+		printError(app, w, http.StatusUnprocessableEntity, "error on creating link", err)
+		return
+	}
+	link := app.conf.Server.PublicUrl + "/register/" + hex.EncodeToString(textByte)
+	email := mail.SendMail{}
+	email.From = app.conf.SMTP.Sender
+	email.To = []string{form.Email}
+	email.Html = "Hi User<br>Activate <a href=" + link + ">Link</a>"
+	email.Subject = "ghotos | New Accout Registration"
+	err = mail.Send(email, mail.GetConf(app.conf.SMTP.Host, app.conf.SMTP.Port, app.conf.SMTP.User, app.conf.SMTP.Password))
+	if err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusInternalServerError, "mailversandt", err)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+
+}
+
+func (app *App) HandleSignUpGetMail(w http.ResponseWriter, r *http.Request) {
+	userformEnc := chi.URLParam(r, "userform")
+
+	userBytesEnc, err := hex.DecodeString(userformEnc)
+	if err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusInternalServerError, "decoding", err)
+		return
+	}
+	userBytes, err := tools.Decrypt(userBytesEnc, []byte(app.conf.Server.TokenKey))
+	form := &model.UserRegisterEmailForm{}
+	json.Unmarshal(userBytes, &form)
+	if err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
+		return
+	}
+	dto := form.ToDto()
+	if err := json.NewEncoder(w).Encode(dto); err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
+		return
+	}
+}
+
+/*
 func (app *App) HandleAuthSignup(w http.ResponseWriter, r *http.Request) {
 
 	form := &model.UserRegisterForm{}
@@ -156,34 +241,35 @@ func (app *App) HandleAuthSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+*/
 
-	/*
-		user, err := repository.LoginUser(app.db, form.Email, form.Password)
-		if err != nil {
-			//log.Warn(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataCreationFailure)
-			return
-		}
+/*
+	user, err := repository.LoginUser(app.db, form.Email, form.Password)
+	if err != nil {
+		//log.Warn(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataCreationFailure)
+		return
+	}
 
-		jwt := service.Jwt{}
-		token, err := jwt.CreateToken(*user)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error.message": "%v"}`, "unable to create access toke")
-			return
-		}
+	jwt := service.Jwt{}
+	token, err := jwt.CreateToken(*user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, "unable to create access toke")
+		return
+	}
 
-		if err := json.NewEncoder(w).Encode(token); err != nil {
-			log.Warn(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
-			return
-		}
-	*/
-
+	if err := json.NewEncoder(w).Encode(token); err != nil {
+		log.Warn(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
+		return
+	}
+*/
+/*
 }
-
+*/
 func (app *App) HandleAuthRefresh(w http.ResponseWriter, r *http.Request) {
 
 	token := model.Token{}

@@ -22,6 +22,7 @@ type serverConf struct {
 	TimeoutRead  time.Duration `env:"SERVER_TIMEOUT_READ,required"`
 	TimeoutWrite time.Duration `env:"SERVER_TIMEOUT_WRITE,required"`
 	TimeoutIdle  time.Duration `env:"SERVER_TIMEOUT_IDLE,required"`
+	TokenKey     string        `env:"TOKEN_SECRET_KEY,required"`
 }
 
 type dbConf struct {

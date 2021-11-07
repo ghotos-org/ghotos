@@ -32,7 +32,9 @@ func New(a *app.App) *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Post("/auth/login", a.HandleAuthLogin)
 		r.Post("/auth/refresh", a.HandleAuthRefresh)
-		r.Post("/auth/signup", a.HandleAuthSignup)
+		r.Post("/auth/signup", a.HandleSignUpCheckMail)
+		r.Get("/auth/signup/{userform}", a.HandleSignUpGetMail)
+		//r.Put("/auth/signup", a.HandleSignUpCreateUser)
 
 		r.Get("/f/{src}", a.HandleShowFile)
 

@@ -2,6 +2,7 @@ package model
 
 import (
 	g "ghotos/adapter/gorm"
+	"time"
 )
 
 type Users []*User
@@ -23,22 +24,29 @@ type UserLoginForm struct {
 	Email    string `json:"email" form:"required,max=255,email"`
 	Password string `json:"password"  form:"required"`
 }
-type UserRegisterForm struct {
-	Email    string `json:"email" form:"required,max=255,email"`
-	Password string `json:"password"  form:"required,min=8,max=20"`
+
+type UserRegisterEmailFormDto struct {
+	Email string `json:"email"`
+}
+type UserRegisterEmailForm struct {
+	Email string    `json:"email" form:"required,max=255,email"`
+	Date  time.Time `json:"date"`
 }
 
 func (f *UserLoginForm) ToModel() (*User, error) {
-
 	return &User{
 		Email:    f.Email,
 		Password: f.Password,
 	}, nil
 }
-func (f *UserRegisterForm) ToModel() (*User, error) {
-
+func (f *UserRegisterEmailForm) ToModel() (*User, error) {
 	return &User{
-		Email:    f.Email,
-		Password: f.Password,
+		Email: f.Email,
 	}, nil
+}
+
+func (u UserRegisterEmailForm) ToDto() *UserRegisterEmailFormDto {
+	return &UserRegisterEmailFormDto{
+		Email: u.Email,
+	}
 }

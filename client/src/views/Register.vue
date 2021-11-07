@@ -20,27 +20,6 @@
                     :error-messages="serverError.email"
                     @blur="serverError.email = null"                    
                     ></v-text-field>
-                    <v-text-field
-                    :name="Math.random()"
-                    autocomplete="false"
-                    id="password"
-                    prepend-icon="mdi-lock"
-                    label="Password"
-                    type="password"
-                    v-model="password" 
-                    :rules="passwordRules"
-                    :error-messages="serverError.password"
-                    @change="serverError.password = null"                    
-                    ></v-text-field>
-                    <v-text-field
-                    :name="Math.random()"
-                    autocomplete="false"
-                    id="password_check"
-                    prepend-icon="mdi-lock"
-                    label="Password Check"
-                    type="password"
-                    v-model="password_check" 
-                    ></v-text-field>
                 
                 </v-card-text>
                 <v-card-actions>
@@ -77,8 +56,6 @@ export default {
       register_success: false,
       valid: true,
       email : "",
-      password : "",
-      password_check : "",
       loading: false,
       message: ""  ,
       emailRules: [
@@ -86,14 +63,8 @@ export default {
         v => /.+@.+/.test(v) || 'E-mail must be valid',
         v => v.length <= 255 || 'E-mail must be less than 255 characters',
       ],      
-      passwordRules: [
-        v => !!v || 'Password is required',
-        v => v.length > 5 || 'Password must be greater than 5 characters',
-        v => v.length <= 20 || 'Password must be less than 20 characters',
-      ], 
       serverError: {
         "email": null,
-        "password": null
       }     
     }    
   },
@@ -108,8 +79,7 @@ export default {
         return
       }
       let email = this.email
-      let password = this.password
-      this.$store.dispatch('auth/register', { email, password })
+      this.$store.dispatch('auth/register', { email })
       .then(
         (data) => {
           if (data !== true){
