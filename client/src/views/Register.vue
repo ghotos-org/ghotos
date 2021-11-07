@@ -81,33 +81,37 @@ export default {
       let email = this.email
       this.$store.dispatch('auth/register', { email })
       .then(
-        (data) => {
+        () => {
+          /*
           if (data !== true){
             this.$dialog.info({title: "Error", text: "Error..."})        
             return 
           }
+          */
           this.register_success = true
 
         },
         error => {
-          if (error.message){
-            this.$dialog.info({title: "Error", text: error.message})        
-            return 
-          }
+
           if (error.response.data.error) {
               let errResponse = error.response.data.error
               if (errResponse.fields) {
                     this.serverError = errResponse.fields
               }
-   
+
+              if (error.response.data.error.message){
+                this.$dialog.info({title: "Error", text: error.response.data.error.message})        
+              }
+
+            return 
+
+          }    
+
+          if (error.message){
+            this.$dialog.info({title: "Error", text: error.message})        
+            return 
           }
-          /*
-            this.loading = false;
-            this.message =
-            (error.response && error.response.data && error.response.data.message) ||
-            error.message ||
-            error.toString();
-            */
+
         }
       )
     }

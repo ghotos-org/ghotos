@@ -62,6 +62,8 @@ func printError(app *App, w http.ResponseWriter, status int, msg string, err err
 			"func": fn,
 			"line": fmt.Sprintf("%d", line),
 		}).Error(err)
+	} else {
+		log.Warn(err)
 	}
 
 	w.WriteHeader(status)

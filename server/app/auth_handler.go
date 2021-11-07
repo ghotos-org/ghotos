@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"net/http"
 )
@@ -95,6 +96,28 @@ func (app *App) HandleSignUpCheckMail(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		w.Write(respBody)
+		return
+	}
+
+	userModel, err := form.ToModel()
+	if err != nil {
+		log.Warn(err)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrFormDecodingFailure)
+		return
+	}
+
+	_, err = repository.ReadUserByEmail(app.db, userModel.Email)
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
+		return
+	}
+
+	if err == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"error" : { "fields" : { "email": "%v"}}}`, "email already taken")
 		return
 	}
 
