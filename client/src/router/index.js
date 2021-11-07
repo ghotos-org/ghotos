@@ -22,6 +22,10 @@ export const router = new Router({
             component: Login
         },
         {
+            path: '/register/:link',
+            component: () => import("@/views/CreateAccount"),
+        },        
+        {
             path: '/register',
             component: () => import("@/views/Register"),
         },

@@ -79,6 +79,18 @@ export const auth = {
           return Promise.reject(error);
         }
       );
+    },
+    create({ commit }, {password, link}) {
+      return AuthService.create(password, link).then(
+        () => {
+          return Promise.resolve();
+        },
+        error => {
+          console.log(error)
+          commit('registerFailure');
+          return Promise.reject(error);
+        }
+      );
     }
   },
   mutations: {

@@ -1,5 +1,5 @@
 <template>
-  <v-app id="ci-login"   >
+  <v-app id="ci-check-account"   >
      <Header title="Ghotos: Register" backLink="/" />
     <v-main class="ci-app-content">
       <v-container>
@@ -12,13 +12,23 @@
                     :name="Math.random()"
                     prepend-icon="mdi-account"
                     v-model="email"
-                    label="Login"
-                    type="email"
-                    :rules="emailRules"
-                    :error-messages="serverError.email"
-                    @blur="serverError.email = null"                    
+                    label="Password"
+                    type="password"
+                    :rules="passwordRules"
+                    :error-messages="serverError.password"
+                    @blur="serverError.password = null"                    
                     ></v-text-field>
-                
+
+                     <v-text-field
+                    :name="Math.random()"
+                    prepend-icon="mdi-account"
+                    v-model="email_check"
+                    label="Password Check"
+                    type="password"
+                    :rules="passwordRulesCheck"               
+                    ></v-text-field>
+
+
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
@@ -53,16 +63,21 @@ export default {
     return {
       register_success: false,
       valid: true,
+      link: null,
       email : "",
+      email_check: "",
       loading: false,
       message: ""  ,
-      emailRules: [
-        v => !!v || 'E-mail is required',
-        v => /.+@.+/.test(v) || 'E-mail must be valid',
-        v => v.length <= 255 || 'E-mail must be less than 255 characters',
+      passwordRules: [
+        v => !!v || 'Password is required',
+        v => v.length >= 5 || 'Password must be more than 5 characters',
+        v => v.length <= 255 || 'Password must be less than 20 characters',
+      ],      
+      passwordRulesCheck: [
+        v => !!v || 'Password is required',
       ],      
       serverError: {
-        "email": null,
+        "password": null,
       }     
     }    
   },
@@ -70,8 +85,44 @@ export default {
     Header
   },
   mounted(){
+    if (this.$route.params.link) {
+       this.link = this.$route.params.link;
+    }
   },
   methods: {
+    register: function () {
+      if (!this.$refs.form.validate()){
+        return
+      }  
+
+      let email = this.email
+      let link = this.link
+      this.$store.dispatch('auth/create', { email, link })
+      .then(
+        () => {
+          this.register_success = true
+        },
+        error => {
+          if (error.response.data.error) {
+              let errResponse = error.response.data.error
+              if (errResponse.fields) {
+                    this.serverError = errResponse.fields
+              }
+              if (error.response.data.error.message){
+                this.$dialog.info({title: "Error", text: error.response.data.error.message})        
+              }
+            return 
+          }    
+
+          if (error.message){
+            this.$dialog.info({title: "Error", text: error.message})        
+            return 
+          }
+        }
+      )  
+          
+    }
+    /*
     register: function () {
       if (!this.$refs.form.validate()){
         return
@@ -101,6 +152,7 @@ export default {
         }
       )
     }
+      */
   },  
 };
 </script>

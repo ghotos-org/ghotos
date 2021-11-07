@@ -22,6 +22,12 @@ class AuthService {
       return Promise.resolve(response.data);
     }); 
   }
+
+  create(password,link) {
+    return ApiService.put("/auth/signup/" + link, {password}).then((response) => {
+      return Promise.resolve(response.data);
+    }); 
+  }
 }
 
 export default new AuthService();
