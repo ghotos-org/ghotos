@@ -91,7 +91,19 @@ export const auth = {
           return Promise.reject(error);
         }
       );
-    }
+    },
+    checkLink({ commit }, {link}) {
+      return AuthService.checkLink( link).then(
+        () => {
+          return Promise.resolve();
+        },
+        error => {
+          console.log(error)
+          commit('registerFailure');
+          return Promise.reject(error);
+        }
+      );
+    }    
   },
   mutations: {
     loginSuccess(state, tokens) {

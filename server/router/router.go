@@ -33,7 +33,8 @@ func New(a *app.App) *chi.Mux {
 		r.Post("/auth/login", a.HandleAuthLogin)
 		r.Post("/auth/refresh", a.HandleAuthRefresh)
 		r.Post("/auth/signup", a.HandleSignUpCheckMail)
-		r.Get("/auth/signup/{userform}", a.HandleSignUpGetMail)
+		r.Get("/auth/signup/{userform}", a.HandleSignUpCheckLink)
+		r.Post("/auth/signup/{userform}", a.HandleSignUpCreateUser)
 		//r.Put("/auth/signup", a.HandleSignUpCreateUser)
 
 		r.Get("/f/{src}", a.HandleShowFile)

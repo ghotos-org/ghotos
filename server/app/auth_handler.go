@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"ghotos/model"
 	"ghotos/repository"
@@ -151,6 +152,127 @@ func (app *App) HandleSignUpCheckMail(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func checkLink(app *App, w http.ResponseWriter, r *http.Request) (*model.User, error) {
+	// get & check email from form
+	userformEnc := chi.URLParam(r, "userform")
+	userBytesEnc, err := hex.DecodeString(userformEnc)
+	if err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusInternalServerError, "check link cannot read", err)
+		return nil, err
+	}
+	userBytes, err := tools.Decrypt(userBytesEnc, []byte(app.conf.Server.TokenKey))
+	userForm := &model.UserRegisterEmailForm{}
+	json.Unmarshal(userBytes, &userForm)
+	if err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusUnprocessableEntity, "link is not valid ", err)
+		return nil, err
+	}
+
+	userModel, err := userForm.ToModel()
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, appErrFormDecodingFailure, err)
+		return nil, err
+	}
+
+	if userModel == nil {
+		printError(app, w, http.StatusInternalServerError, "link is not valid, no mail informations", nil)
+		return nil, errors.New("user is null")
+	}
+
+	//database check
+	_, err = repository.ReadUserByEmail(app.db, userModel.Email)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
+		return nil, err
+	}
+
+	if err == nil { // User Allready inseretd
+		printError(app, w, http.StatusGone, "link is expired", err)
+		return nil, errors.New("user is null")
+	}
+
+	return userModel, nil
+}
+
+func (app *App) HandleSignUpCheckLink(w http.ResponseWriter, r *http.Request) {
+
+	// get & check email from form
+	_, err := checkLink(app, w, r)
+	if err != nil {
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (app *App) HandleSignUpCreateUser(w http.ResponseWriter, r *http.Request) {
+
+	userModel, err := checkLink(app, w, r)
+	if err != nil {
+		return
+	}
+
+	// get & check password from form
+	passwordForm := &model.UserRegisterPasswordForm{}
+	if err := json.NewDecoder(r.Body).Decode(passwordForm); err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
+		return
+	}
+	if err := app.validator.Struct(passwordForm); err != nil {
+		log.Warn(err)
+		resp := validator.ToErrResponse(err, nil)
+		if resp == nil {
+			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
+			return
+		}
+		respBody, err := json.Marshal(resp)
+		if err != nil {
+			log.Warn(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
+			return
+		}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(respBody)
+		return
+	}
+
+	userModel.Password = passwordForm.Password
+	user, err := repository.CreateUser(app.db, userModel)
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, appErrCreationFailure, err)
+		return
+	}
+
+	log.Infof("User created %s", user.UID)
+	w.WriteHeader(http.StatusCreated)
+
+	/*
+		userModel, err := userForm.ToModel()
+		if err != nil {
+			printError(app, w, http.StatusInternalServerError, appErrFormDecodingFailure, err)
+			return
+		}*/
+
+	/*
+		// read user from database
+
+		user, err := repository.ReadUserByEmail(app.db, userModel.Email)
+		if err != nil && err != gorm.ErrRecordNotFound {
+			printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
+			return
+		}
+
+		if err == nil {
+			printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
+			return
+		}
+	*/
+}
+
+/*
 func (app *App) HandleSignUpGetMail(w http.ResponseWriter, r *http.Request) {
 	userformEnc := chi.URLParam(r, "userform")
 
@@ -175,7 +297,7 @@ func (app *App) HandleSignUpGetMail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
+*/
 /*
 func (app *App) HandleAuthSignup(w http.ResponseWriter, r *http.Request) {
 

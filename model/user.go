@@ -33,12 +33,17 @@ type UserRegisterEmailForm struct {
 	Date  time.Time `json:"date"`
 }
 
+type UserRegisterPasswordForm struct {
+	Password string `json:"password" form:"required,min=6,max=100"`
+}
+
 func (f *UserLoginForm) ToModel() (*User, error) {
 	return &User{
 		Email:    f.Email,
 		Password: f.Password,
 	}, nil
 }
+
 func (f *UserRegisterEmailForm) ToModel() (*User, error) {
 	return &User{
 		Email: f.Email,

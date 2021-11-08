@@ -24,10 +24,15 @@ class AuthService {
   }
 
   create(password,link) {
-    return ApiService.put("/auth/signup/" + link, {password}).then((response) => {
+    return ApiService.post("/auth/signup/" + link, {password}).then((response) => {
       return Promise.resolve(response.data);
     }); 
   }
+  checkLink(link) {
+    return ApiService.get("/auth/signup/" + link).then((response) => {
+      return Promise.resolve(response.data);
+    }); 
+  }  
 }
 
 export default new AuthService();
