@@ -9,7 +9,8 @@
               <div v-if="!check_link">
                 <v-card-text>
                   Link from E-Mail is not valid or expired!
-                 <br> <v-btn :to="'/register'" depressed> Try again </v-btn>
+                  <br />
+                  <v-btn :to="'/register'" depressed> Try again </v-btn>
                 </v-card-text>
               </div>
               <div v-else>
