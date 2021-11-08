@@ -25,6 +25,7 @@ RUN apk update && apk add --no-cache gcc musl-dev vips-dev
 
 COPY . .
 COPY --from=client-env /app_client/dist /app_ghotos/server/app/client
+#COPY --from=client-env /app_client/dist /app_ghotos/server/router/client
 RUN go build  -mod vendor  -ldflags '-w -s' -a -o ./bin/app 
 #RUN go build  -mod vendor  -a -o ./bin/app 
 # Prod environment

@@ -1,7 +1,9 @@
 package router
 
 import (
+	"embed"
 	"ghotos/server/app"
+	"io/fs"
 
 	"ghotos/server/app/middleware"
 
@@ -9,6 +11,10 @@ import (
 
 	"github.com/go-chi/cors"
 )
+
+//go:embed client/*
+var client embed.FS
+var contentFS, _ = fs.Sub(client, "client")
 
 func New(a *app.App) *chi.Mux {
 	r := chi.NewRouter()
@@ -88,8 +94,14 @@ func New(a *app.App) *chi.Mux {
 
 		})
 	*/
+	//r.Handle("/*", app.HandleClientFileServer())
+	//fileServer := http.FileServer(http.FS(contentFS))
+	//r.Get("/*", app.AddFallbackHandler(http.FileServer(http.FS(contentFS)).ServeHTTP, "/"))
 
-	r.Handle("/*", app.HandleClient())
+	r.Get("/*", a.HandleClient)
+	//r.Get("/*", a.HandleClient)
+	//r.Handle("/*", app.HandleClientFileServer())
+	//r.Handle("/*", app.AddFallbackHandler(app.HandleClientFileServer()))
 
 	return r
 }
