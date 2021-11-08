@@ -11,8 +11,11 @@
                   <v-text-field
                     prepend-icon="mdi-account"
                     v-model="email"
-                    label="Login"
+                    label="E-Mail"
                     type="email"
+                    :rules="emailRules"
+                    :error-messages="serverError.email"
+                    @blur="serverError.email = null"                         
                   ></v-text-field>
                   <v-text-field
                     id="password"
@@ -20,6 +23,9 @@
                     label="Password"
                     type="password"
                     v-model="password"
+                    :rules="passwordRules"
+                    :error-messages="serverError.password"
+                    @blur="serverError.password = null"                    
                   ></v-text-field>
                 </v-card-text>
                 <v-card-actions>
@@ -48,6 +54,16 @@ export default {
       password: "",
       loading: false,
       message: "",
+      passwordRules: [
+        (v) => !!v || "Password is required",
+      ],
+      emailRules: [
+        v => !!v || 'E-mail is required',
+      ],    
+      serverError: {
+        password: null,
+        email: null,
+      },                
     };
   },
   components: {
@@ -63,17 +79,24 @@ export default {
       this.$store.dispatch("auth/login", { email, password }).then(
         () => this.$router.push("/"),
         (error) => {
-          this.loading = false;
-          let text =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          this.$dialog.info({
-            title: "Error",
-            text,
-          });
+          if (error.response.data.error) {
+            let errResponse = error.response.data.error;
+            if (errResponse.fields) {
+              this.serverError = errResponse.fields;
+            }
+            if (error.response.data.error.message) {
+              this.$dialog.info({
+                title: "Error",
+                text: error.response.data.error.message,
+              });
+            }
+            return;
+          }
+
+          if (error.message) {
+            this.$dialog.info({ title: "Error", text: error.message });
+            return;
+          }          
         }
       );
     },

@@ -38,10 +38,7 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		log.Warn(err)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrDataAccessFailure)
+		printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
 		return
 	}
 	src, err := repository.EncodePath(*modelFile)
@@ -53,10 +50,7 @@ func (app *App) HandleReadFile(w http.ResponseWriter, r *http.Request) {
 	fileSimple := modelFile.ToDtoSimple()
 	fileSimple.Src = &src
 	if err := json.NewEncoder(w).Encode(fileSimple); err != nil {
-		log.Warn(err)
-
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"error.message": "%v"}`, appErrJsonCreationFailure)
+		printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
 		return
 	}
 
