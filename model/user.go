@@ -8,7 +8,6 @@ import (
 type Users []*User
 type User struct {
 	g.ModelUID
-	Status   int
 	Email    string
 	Password string
 }
