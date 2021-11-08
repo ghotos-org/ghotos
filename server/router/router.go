@@ -1,9 +1,7 @@
 package router
 
 import (
-	"embed"
 	"ghotos/server/app"
-	"io/fs"
 
 	"ghotos/server/app/middleware"
 
@@ -11,10 +9,6 @@ import (
 
 	"github.com/go-chi/cors"
 )
-
-//go:embed client/*
-var client embed.FS
-var contentFS, _ = fs.Sub(client, "client")
 
 func New(a *app.App) *chi.Mux {
 	r := chi.NewRouter()
