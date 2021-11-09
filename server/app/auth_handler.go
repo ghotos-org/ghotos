@@ -10,7 +10,6 @@ import (
 	"ghotos/server/service"
 	"ghotos/util/mail"
 	"ghotos/util/tools"
-	"ghotos/util/validator"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -78,25 +77,7 @@ func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) HandleSignUpLink2Mail(w http.ResponseWriter, r *http.Request) {
 	form := &model.UserRegisterEmailForm{}
-	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
-		log.Warn(err)
-		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
-		return
-	}
-	if err := app.validator.Struct(form); err != nil {
-		log.Warn(err)
-		resp := validator.ToErrResponse(err, nil)
-		if resp == nil {
-			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
-			return
-		}
-		respBody, err := json.Marshal(resp)
-		if err != nil {
-			printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
-			return
-		}
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write(respBody)
+	if app.checkForm(form, w, r) {
 		return
 	}
 
@@ -193,25 +174,7 @@ func (app *App) HandleSignUpCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// get & check password from form
 	passwordForm := &model.UserRegisterPasswordForm{}
-	if err := json.NewDecoder(r.Body).Decode(passwordForm); err != nil {
-		log.Warn(err)
-		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
-		return
-	}
-	if err := app.validator.Struct(passwordForm); err != nil {
-		log.Warn(err)
-		resp := validator.ToErrResponse(err, nil)
-		if resp == nil {
-			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
-			return
-		}
-		respBody, err := json.Marshal(resp)
-		if err != nil {
-			printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
-			return
-		}
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write(respBody)
+	if app.checkForm(passwordForm, w, r) {
 		return
 	}
 
@@ -266,25 +229,7 @@ func (app *App) HandleAuthLogout(w http.ResponseWriter, r *http.Request) {
 func (app *App) HandleNewPasswordLink2Mail(w http.ResponseWriter, r *http.Request) {
 
 	form := &model.UserRegisterEmailForm{}
-	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
-		log.Warn(err)
-		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
-		return
-	}
-	if err := app.validator.Struct(form); err != nil {
-		log.Warn(err)
-		resp := validator.ToErrResponse(err, nil)
-		if resp == nil {
-			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
-			return
-		}
-		respBody, err := json.Marshal(resp)
-		if err != nil {
-			printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
-			return
-		}
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write(respBody)
+	if app.checkForm(form, w, r) {
 		return
 	}
 	userModel, err := form.ToModel()
@@ -367,25 +312,7 @@ func (app *App) HandleNewPasswordCreate(w http.ResponseWriter, r *http.Request) 
 
 	// get & check password from form
 	passwordForm := &model.UserRegisterPasswordForm{}
-	if err := json.NewDecoder(r.Body).Decode(passwordForm); err != nil {
-		log.Warn(err)
-		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
-		return
-	}
-	if err := app.validator.Struct(passwordForm); err != nil {
-		log.Warn(err)
-		resp := validator.ToErrResponse(err, nil)
-		if resp == nil {
-			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
-			return
-		}
-		respBody, err := json.Marshal(resp)
-		if err != nil {
-			printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
-			return
-		}
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write(respBody)
+	if app.checkForm(passwordForm, w, r) {
 		return
 	}
 
