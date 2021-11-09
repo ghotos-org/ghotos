@@ -171,11 +171,9 @@ func main() {
 		return
 	}
 
-	if opts.Migrate != "" {
-		if migrate(db, opts.Migrate, args) {
-			log.Info("Program exited")
-			return
-		}
+	if migrate(db, opts.Migrate, args) {
+		log.Info("Program exited")
+		return
 	}
 
 	validator := vr.New()
