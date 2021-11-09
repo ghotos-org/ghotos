@@ -55,9 +55,13 @@ func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := repository.LoginUser(app.db, form.Email, form.Password)
+	user, err := repository.ReadUserByEmail(app.db, form.Email)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, "user & password not matched", err)
+		return
+	}
+	if !tools.CheckPasswordHash(form.Password, user.Password) {
+		printError(app, w, http.StatusInternalServerError, "user & password not matched", nil)
 		return
 	}
 
@@ -178,7 +182,12 @@ func (app *App) HandleSignUpCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userModel.Password = passwordForm.Password
+	userModel.Password, err = tools.HashPassword(passwordForm.Password)
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, "Password not allowd", err)
+		return
+	}
+
 	user, err := repository.CreateUser(app.db, userModel)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, appErrCreationFailure, err)
@@ -317,7 +326,11 @@ func (app *App) HandleNewPasswordCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	user.Password = passwordForm.Password
+	user.Password, err = tools.HashPassword(passwordForm.Password)
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, "Password not allowd", err)
+		return
+	}
 	err = repository.UpdateUser(app.db, user)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, appErrCreationFailure, err)

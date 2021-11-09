@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users
     UNIQUE KEY(id) 
 );
 
-INSERT INTO users (uid,email,password,created_at) VALUES("200KPME8UZ4tjpP0IqMyyAizmsy", "system@bluffy.de","mgr", NOW());
+INSERT INTO users (uid,email,password,created_at) VALUES("200KPME8UZ4tjpP0IqMyyAizmsy", "system@bluffy.de","$2a$14$5sPvPBjLbUf4MOTcu1.izOhdTOx..AAcmGprzHkCNy2ckdRiGadxe", NOW());
 COMMIT;
 
 -- +goose Down

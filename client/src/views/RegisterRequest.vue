@@ -1,7 +1,7 @@
 <template>
   <v-app id="ci-login"   >
      <Header v-if="page_register" title="Ghotos: Register" backLink="/" />
-     <Header v-if="page_newpassword" title="Ghotos: New Password" backLink="/" />
+     <Header v-else-if="page_newpassword" title="Ghotos: New Password" backLink="/" />
      <Header v-else title="Ghotos" backLink="/" />
     <v-main class="ci-app-content">
       <v-container>

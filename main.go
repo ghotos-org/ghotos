@@ -8,6 +8,7 @@ import (
 	"ghotos/config"
 	"ghotos/server/app"
 	"ghotos/server/router"
+	"ghotos/util/tools"
 	vr "ghotos/util/validator"
 	"strconv"
 
@@ -32,6 +33,7 @@ import (
 type ArgOptions struct {
 	Env     string `short:"e" long:"env" description:"Environment File (default: .env)"`
 	Migrate string `short:"m" long:"migrate" description:"DB mirgrate tool"  choice:"up" choice:"down" choice:"status" choice:"version" choice:"reset" choice:"up-by-one" choice:"up-to" choice:"down-to"`
+	PWHash  string `short:"p" long:"password" description:"Password Hash"`
 }
 
 //go:embed migrations/*
@@ -137,6 +139,18 @@ func main() {
 		log.Fatal(err)
 		return
 	}
+
+	if opts.PWHash != "" {
+		hashed, err := tools.HashPassword(opts.PWHash)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		log.Printf("Password: %s Hashed: %s", opts.PWHash, hashed)
+
+		return
+	}
+
 	appConf := config.AppConfig(opts.Env)
 	if appConf.Debug {
 		log.SetLevel(log.DebugLevel)
@@ -157,9 +171,11 @@ func main() {
 		return
 	}
 
-	if migrate(db, opts.Migrate, args) {
-		log.Info("Program exited")
-		return
+	if opts.Migrate != "" {
+		if migrate(db, opts.Migrate, args) {
+			log.Info("Program exited")
+			return
+		}
 	}
 
 	validator := vr.New()
