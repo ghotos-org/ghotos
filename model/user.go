@@ -8,15 +8,15 @@ import (
 type Users []*User
 type User struct {
 	g.ModelUID
-	Email    string
-	Password string
+	Email              string
+	Password           string
+	NewPasswordRequest *time.Time
 }
 
 type UserDtos []*UserDto
 type UserDto struct {
-	UID      string `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	UID   string `json:"id"`
+	Email string `json:"email"`
 }
 
 type UserLoginForm struct {

@@ -13,6 +13,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var DATE_FORMAT_COMPARE = "20060102150405000"
+
 //var commonIV = []byte("GEbJOVHUONrWInXe")
 func Min(x, y int) int {
 	if x < y {

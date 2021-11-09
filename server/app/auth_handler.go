@@ -19,34 +19,34 @@ import (
 	"net/http"
 )
 
-func getUserfromLink(app *App, w http.ResponseWriter, r *http.Request) (*model.User, error) {
+func getUserfromLink(app *App, w http.ResponseWriter, r *http.Request) (*model.User, *model.UserRegisterEmailForm, error) {
 	// get & check email from form
 	userformEnc := chi.URLParam(r, "userform")
 	userBytesEnc, err := hex.DecodeString(userformEnc)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, nil, err
 	}
 	userBytes, err := tools.Decrypt(userBytesEnc, []byte(app.conf.Server.TokenKey))
 	userForm := &model.UserRegisterEmailForm{}
 	json.Unmarshal(userBytes, &userForm)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	userModel, err := userForm.ToModel()
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if userModel.Email == "" {
 		printError(app, w, http.StatusInternalServerError, "link is not valid, no mail informations", nil)
-		return nil, errors.New("user is null")
+		return nil, nil, errors.New("user is null")
 	}
 
-	return userModel, nil
+	return userModel, userForm, nil
 }
 
 func (app *App) HandleAuthLogin(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +137,7 @@ func (app *App) HandleSignUpCheckLink(w http.ResponseWriter, r *http.Request) {
 
 	// get & check email from form
 
-	userModel, err := getUserfromLink(app, w, r)
+	userModel, _, err := getUserfromLink(app, w, r)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, "link is invalid", err)
 		return
@@ -159,7 +159,7 @@ func (app *App) HandleSignUpCheckLink(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) HandleSignUpCreateUser(w http.ResponseWriter, r *http.Request) {
 
-	userModel, err := getUserfromLink(app, w, r)
+	userModel, _, err := getUserfromLink(app, w, r)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, "link is invalid", err)
 		return
@@ -247,7 +247,7 @@ func (app *App) HandleNewPasswordLink2Mail(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	_, err = repository.ReadUserByEmail(app.db, userModel.Email)
+	user, err := repository.ReadUserByEmail(app.db, userModel.Email)
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
@@ -260,10 +260,28 @@ func (app *App) HandleNewPasswordLink2Mail(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	if user.NewPasswordRequest != nil {
+		duration := float64(5)
+		log.Info(time.Since(*user.NewPasswordRequest).Minutes())
+		if time.Since(*user.NewPasswordRequest).Minutes() < duration {
+			printError(app, w, http.StatusInternalServerError, "new password link already send, pleas check your email or try later (5min)", nil)
+			return
+		}
+
+	}
+
+	now := time.Now()
+	user.NewPasswordRequest = &now
+
+	err = repository.UpdateUser(app.db, user)
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
+		return
+	}
 	// todo:
 	// check if email existes, if, then send mail with password forogot
 
-	form.Date = time.Now()
+	form.Date = now
 	formBytes, err := json.Marshal(form)
 	if err != nil {
 		printError(app, w, http.StatusUnprocessableEntity, "", err)
@@ -291,24 +309,7 @@ func (app *App) HandleNewPasswordLink2Mail(w http.ResponseWriter, r *http.Reques
 
 func (app *App) HandleNewPasswordCheckLink(w http.ResponseWriter, r *http.Request) {
 
-	userModel, err := getUserfromLink(app, w, r)
-	if err != nil {
-		printError(app, w, http.StatusInternalServerError, "link is invalid", err)
-		return
-	}
-	//database check
-	_, err = repository.ReadUserByEmail(app.db, userModel.Email)
-	if err != nil {
-		printError(app, w, http.StatusInternalServerError, "link exipred", err)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-}
-
-func (app *App) HandleNewPasswordCreate(w http.ResponseWriter, r *http.Request) {
-
-	userModel, err := getUserfromLink(app, w, r)
+	userModel, userForm, err := getUserfromLink(app, w, r)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, "link is invalid", err)
 		return
@@ -320,12 +321,56 @@ func (app *App) HandleNewPasswordCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if user.NewPasswordRequest == nil {
+		log.Error("no user.NewPasswordRequest was set")
+		printError(app, w, http.StatusInternalServerError, "link is invalid", nil)
+		return
+	}
+	userDate := *user.NewPasswordRequest
+
+	if userForm.Date.Format(tools.DATE_FORMAT_COMPARE) != userDate.Format(tools.DATE_FORMAT_COMPARE) {
+		log.Error("userForm.Date != *user.NewPasswordRequest")
+		printError(app, w, http.StatusInternalServerError, "link exipred", nil)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (app *App) HandleNewPasswordCreate(w http.ResponseWriter, r *http.Request) {
+
+	userModel, userForm, err := getUserfromLink(app, w, r)
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, "link is invalid", err)
+		return
+	}
+	//database check
+	user, err := repository.ReadUserByEmail(app.db, userModel.Email)
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, "link exipred", err)
+		return
+	}
+
+	if user.NewPasswordRequest == nil {
+		log.Error("no user.NewPasswordRequest was set")
+		printError(app, w, http.StatusInternalServerError, "link is invalid", nil)
+		return
+	}
+	userDate := *user.NewPasswordRequest
+
+	if userForm.Date.Format(tools.DATE_FORMAT_COMPARE) != userDate.Format(tools.DATE_FORMAT_COMPARE) {
+		log.Error("userForm.Date != *user.NewPasswordRequest")
+		printError(app, w, http.StatusInternalServerError, "link exipred", nil)
+		return
+	}
+
 	// get & check password from form
 	passwordForm := &model.UserRegisterPasswordForm{}
 	if app.checkForm(passwordForm, w, r) {
 		return
 	}
 
+	user.NewPasswordRequest = nil
 	user.Password, err = tools.HashPassword(passwordForm.Password)
 	if err != nil {
 		printError(app, w, http.StatusInternalServerError, "Password not allowd", err)
