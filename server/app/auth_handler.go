@@ -266,3 +266,74 @@ func (app *App) HandleAuthLogout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 
 }
+
+func (app *App) HandleAuthNewPaswortLink2Mail(w http.ResponseWriter, r *http.Request) {
+
+	form := &model.UserRegisterEmailForm{}
+	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
+		log.Warn(err)
+		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
+		return
+	}
+	if err := app.validator.Struct(form); err != nil {
+		log.Warn(err)
+		resp := validator.ToErrResponse(err, nil)
+		if resp == nil {
+			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
+			return
+		}
+		respBody, err := json.Marshal(resp)
+		if err != nil {
+			printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
+			return
+		}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(respBody)
+		return
+	}
+	userModel, err := form.ToModel()
+	if err != nil {
+		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
+		return
+	}
+
+	_, err = repository.ReadUserByEmail(app.db, userModel.Email)
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		printError(app, w, http.StatusInternalServerError, appErrDataAccessFailure, err)
+		return
+	}
+
+	if err != nil && err == gorm.ErrRecordNotFound {
+		w.WriteHeader(http.StatusCreated)
+		return
+	}
+
+	// todo:
+	// check if email existes, if, then send mail with password forogot
+
+	form.Date = time.Now()
+	formBytes, err := json.Marshal(form)
+	if err != nil {
+		printError(app, w, http.StatusUnprocessableEntity, "", err)
+		return
+	}
+	textByte, err := tools.Encrypt(formBytes, []byte(app.conf.Server.TokenKey), "")
+	if err != nil {
+		printError(app, w, http.StatusUnprocessableEntity, "error on creating link", err)
+		return
+	}
+	link := app.conf.Server.PublicUrl + "/password/" + hex.EncodeToString(textByte)
+	email := mail.SendMail{}
+	email.From = app.conf.SMTP.Sender
+	email.To = []string{form.Email}
+	email.Html = "Hi User<br>new password creation link:  <a href=" + link + ">Link</a>"
+	email.Subject = "ghotos | New Accout Registration"
+	err = mail.Send(email, mail.GetConf(app.conf.SMTP.Host, app.conf.SMTP.Port, app.conf.SMTP.User, app.conf.SMTP.Password))
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, "mailversandt", err)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+
+}
