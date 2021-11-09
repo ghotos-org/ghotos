@@ -246,6 +246,7 @@ func (app *App) HandleNewPasswordLink2Mail(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err != nil && err == gorm.ErrRecordNotFound {
+		log.Warnf("Fake Response, user not exists: %v", form.Email)
 		w.WriteHeader(http.StatusCreated)
 		return
 	}

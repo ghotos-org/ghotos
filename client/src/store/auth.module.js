@@ -68,8 +68,8 @@ export const auth = {
       });
       */
     },
-    register({ commit }, user) {
-      return AuthService.register(user).then(
+    registerRequest({ commit }, user) {
+      return AuthService.registerRequest(user).then(
         () => {
           return Promise.resolve();
         },
@@ -80,8 +80,8 @@ export const auth = {
         }
       );
     },
-    create({ commit }, {password, link}) {
-      return AuthService.create(password, link).then(
+    register({ commit }, {password, link}) {
+      return AuthService.register(password, link).then(
         () => {
           return Promise.resolve();
         },
@@ -92,8 +92,8 @@ export const auth = {
         }
       );
     },
-    checkLink({ commit }, {link}) {
-      return AuthService.checkLink( link).then(
+    registerCheck({ commit }, {link}) {
+      return AuthService.registerCheck( link).then(
         () => {
           return Promise.resolve();
         },
@@ -103,7 +103,43 @@ export const auth = {
           return Promise.reject(error);
         }
       );
-    }    
+    },
+    newPasswordRequest({ commit }, user) {
+      return AuthService.newPasswordRequest(user).then(
+        () => {
+          return Promise.resolve();
+        },
+        error => {
+          console.log(error)
+          commit('registerFailure');
+          return Promise.reject(error);
+        }
+      );
+    },
+    newPassword({ commit }, {password, link}) {
+      return AuthService.newPassword(password, link).then(
+        () => {
+          return Promise.resolve();
+        },
+        error => {
+          console.log(error)
+          commit('registerFailure');
+          return Promise.reject(error);
+        }
+      );
+    },
+    newPasswordCheck({ commit }, {link}) {
+      return AuthService.newPasswordCheck( link).then(
+        () => {
+          return Promise.resolve();
+        },
+        error => {
+          console.log(error)
+          commit('registerFailure');
+          return Promise.reject(error);
+        }
+      );
+    }  
   },
   mutations: {
     loginSuccess(state, tokens) {

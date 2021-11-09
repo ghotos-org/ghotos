@@ -23,11 +23,23 @@ export const router = new Router({
         },
         {
             path: '/register/:link',
-            component: () => import("@/views/CreateAccount"),
+            props: { page_register: true },            
+            component: () => import("@/views/Register"),
         },        
         {
             path: '/register',
+            props: { page_register: true },
+            component: () => import("@/views/RegisterRequest"),
+        },
+        {
+            path: '/password/:link',
+            props: { page_newpassword: true },            
             component: () => import("@/views/Register"),
+        },        
+        {
+            path: '/password',
+            props: { page_newpassword: true },
+            component: () => import("@/views/RegisterRequest"),
         },
         {
             path: "/photo/:file",

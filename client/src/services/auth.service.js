@@ -17,19 +17,36 @@ class AuthService {
     });       
   }
 
-  register(user) {
+  registerRequest(user) {
     return ApiService.post("/auth/signup", user).then((response) => {
       return Promise.resolve(response.data);
     }); 
   }
+  registerCheck(link) {
+    return ApiService.get("/auth/signup/" + link).then((response) => {
+      return Promise.resolve(response.data);
+    }); 
+  }  
 
-  create(password,link) {
+  register(password,link) {
     return ApiService.post("/auth/signup/" + link, {password}).then((response) => {
       return Promise.resolve(response.data);
     }); 
   }
-  checkLink(link) {
-    return ApiService.get("/auth/signup/" + link).then((response) => {
+
+  newPasswordRequest(user) {
+    return ApiService.post("/auth/password", user).then((response) => {
+      return Promise.resolve(response.data);
+    }); 
+  }
+  newPasswordCheck(link) {
+    return ApiService.get("/auth/password/" + link).then((response) => {
+      return Promise.resolve(response.data);
+    }); 
+  }  
+
+  newPassword(password,link) {
+    return ApiService.post("/auth/password/" + link, {password}).then((response) => {
       return Promise.resolve(response.data);
     }); 
   }  
