@@ -18,6 +18,7 @@ services:
       - "4090:8080"
     volumes:
       - ".:/app_ghotos"
+      - "./data_dev:/data/ghoto"
     depends_on:
       - db
     networks:
