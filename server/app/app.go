@@ -85,3 +85,29 @@ func printError(app *App, w http.ResponseWriter, status int, msg string, err err
 	w.Write(errorJson)
 
 }
+
+func (app *App) checkForm(form interface{}, w http.ResponseWriter, r *http.Request) (stop bool) {
+	if err := json.NewDecoder(r.Body).Decode(form); err != nil {
+		printError(app, w, http.StatusUnprocessableEntity, appErrFormDecodingFailure, err)
+		return true
+	}
+
+	if err := app.validator.Struct(form); err != nil {
+		log.Warn(err)
+		resp := val.ToErrResponse(err, nil)
+		if resp == nil {
+			printError(app, w, http.StatusInternalServerError, appErrFormErrResponseFailure, err)
+			return true
+		}
+		respBody, err := json.Marshal(resp)
+		if err != nil {
+			printError(app, w, http.StatusInternalServerError, appErrJsonCreationFailure, err)
+			return true
+		}
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write(respBody)
+		return true
+	}
+
+	return false
+}
