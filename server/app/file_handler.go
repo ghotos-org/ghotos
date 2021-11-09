@@ -147,11 +147,13 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 	options := bimg.Options{
 		Height:        height,
 		Width:         width,
-		StripMetadata: true,
 		Enlarge:       true,
 		Crop:          false,
 		Quality:       quality,
 		Interlace:     true,
+		StripMetadata: true,
+		//NoAutoRotate: true,
+
 	}
 
 	image, err := imageOrg.Process(options)
@@ -270,8 +272,9 @@ func (app *App) HandleCreateFile(w http.ResponseWriter, r *http.Request) {
 		StripMetadata: false,
 		Crop:          false,
 		Enlarge:       true,
-		Quality:       95,
+		Quality:       100,
 		Interlace:     true,
+		NoAutoRotate:  true,
 	}
 	newImage, err := orgImage.Process(options)
 	if err != nil {
