@@ -18,9 +18,7 @@
     </div>
     <div v-else  v-bind:id="file" ref="imagebox">    
         <v-responsive :aspect-ratio="4 / 3">
-        
           <div style="background: #cccccc; height: 100%" width="400px">&nbsp;</div>
-
         </v-responsive>
     </div>    
   </div>

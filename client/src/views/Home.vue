@@ -3,10 +3,10 @@
     <Header />
     <v-main class="ci-app-content">
       <v-container>
-                    <PhotoDialog />
+                    <PhotoDialog v:on="closeDialog" />
 
         <div v-for="item in gallery" v-bind:key="item.day">        
-            <GalleryFiles  :item="item"/>   
+            <GalleryFiles :id="'g-' + item.day"  :item="item"  @closePhotoDialog="closePhotoDialog" />   
                      
         </div>
       </v-container>
@@ -79,13 +79,17 @@ export default {
 
   },
   methods: {
-      pageScroll(){
-        const vm = this
-        vm.$store.commit("SET_PAGESCROLL", true); 
-        clearTimeout(vm.scrollTimeout);
-        vm.scrollTimeout = setTimeout(function(){
-            vm.$store.commit("SET_PAGESCROLL", false); 
-        },300) 
+    closePhotoDialog(){
+
+
+    },
+    pageScroll(){
+      const vm = this
+      vm.$store.commit("SET_PAGESCROLL", true); 
+      clearTimeout(vm.scrollTimeout);
+      vm.scrollTimeout = setTimeout(function(){
+          vm.$store.commit("SET_PAGESCROLL", false); 
+      },300) 
    },
 
     openMedia(file){  

@@ -7,10 +7,12 @@
         <v-col 
           v-for="file in files"
           v-bind:key="file"
+          :ref="file"
+          :id="'th-' + file"
           class="d-flex child-flex"
           cols="6 col-sm-3 col-md-3 col-lg-2  col-xl-1"          
         >     
-          <PhotoDialog :fileID="file" />
+          <PhotoDialog :fileID="file" @closePhotoDialog="closePhotoDialog" />
         </v-col>
       </template>        
       <template v-else>
@@ -72,7 +74,7 @@ export default {
 
 
   computed: {
-    ...mapGetters(["galleryDays","pageIsScrolling"]),
+    ...mapGetters(["galleryDays","pageIsScrolling", "selectedFile"]),
     update: {
         get: function (){
           if (this.item.day && this.galleryDays && this.galleryDays[this.item.day] && this.galleryDays[this.item.day].update) {
@@ -105,6 +107,22 @@ export default {
     */
   }, 
   methods: {
+    closePhotoDialog(){
+     // console.log("test", $e.day)
+
+      /*
+      console.log("TEST Close")
+                          this.$forceUpdate();
+
+      let a = document.getElementById('th-' + this.selectedFile);
+
+        console.log(a)
+
+         a.scrollIntoView({behavior: 'smooth'}, true);
+*/
+      this.$emit('closePhotoDialog')
+
+    },
     openFile(file){  
         this.$emit('openFile', file)
     },  
@@ -115,7 +133,6 @@ export default {
     visibilityChanged(visible){
       if (visible) {
           if (!this.galleryDays[this.item.day] || (this.galleryDays[this.item.day] && this.galleryDays[this.item.day].update.last !=  this.galleryDays[this.item.day].update.new)) {
-          console.log('########### HIER');
             return  this.$store.dispatch("GET_GALLERY_DAY", {day : this.item.day}).then(() => {
               this.galleryDays[this.item.day].update.last = this.galleryDays[this.item.day].update.new
               this.files = this.galleryDays[this.item.day].files

@@ -82,7 +82,7 @@ const actions = {
   },   
   ["GET_GALLERY_DAY"]({ commit }, data) {
     commit("FETCH_START");
-    console.log("GET_GALLERY_DAY", data)
+    //console.log("GET_GALLERY_DAY", data)
     return FilesService.getGalleryDay(data.day).then((response) => {
       commit("FETCH_END");      
       commit("SET_GALLERY_DAY", {response, day: data.day});

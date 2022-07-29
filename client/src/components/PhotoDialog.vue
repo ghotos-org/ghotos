@@ -39,7 +39,7 @@
           <v-btn
             icon
             dark
-            @click="dialog = false"
+            @click="close()"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -107,6 +107,15 @@ export default {
     ...mapGetters(["gallery","galleryDays","files","selectedFile"]),
   },  
   methods: {  
+    close(){
+      this.dialog = false
+
+      let file = this.files[this.bigFileID]
+        let a = document.getElementById('g-' + file.day);
+      a.scrollIntoView({block: "center"});
+
+      this.$emit('closePhotoDialog', this.files[this.bigFileID])
+    },
     selectFile(){
        this.$store.commit("SET_SELECTED_FILE", this.fileID);
 
