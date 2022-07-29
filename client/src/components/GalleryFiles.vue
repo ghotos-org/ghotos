@@ -6,11 +6,11 @@
       <template  v-if="files" >
         <v-col 
           v-for="file in files"
-          v-bind:key="file.id"
+          v-bind:key="file"
           class="d-flex child-flex"
           cols="6 col-sm-3 col-md-3 col-lg-2  col-xl-1"          
-        >      
-          <GalleryFile  :file="file"/>
+        >     
+          <PhotoDialog :fileID="file" />
         </v-col>
       </template>        
       <template v-else>
@@ -35,7 +35,9 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
-import GalleryFile from "@/components/GalleryFile.vue";
+//import GalleryFile from "@/components/GalleryFile.vue";
+import PhotoDialog from "@/components/PhotoDialog.vue";
+
 
 export default {
   props: ["item"],
@@ -48,7 +50,9 @@ export default {
     }
   },
   components: {
-    GalleryFile
+   // GalleryFile,
+    PhotoDialog
+
   },  
   
 
@@ -58,6 +62,7 @@ export default {
           console.log("watche" + this.item.day, newValue, oldValue)
               return  this.$store.dispatch("GET_GALLERY_DAY", {day : this.item.day}).then(() => {
             this.files = this.galleryDays[this.item.day].files
+
           });
         }
     }
@@ -110,10 +115,12 @@ export default {
     visibilityChanged(visible){
       if (visible) {
           if (!this.galleryDays[this.item.day] || (this.galleryDays[this.item.day] && this.galleryDays[this.item.day].update.last !=  this.galleryDays[this.item.day].update.new)) {
+          console.log('########### HIER');
             return  this.$store.dispatch("GET_GALLERY_DAY", {day : this.item.day}).then(() => {
               this.galleryDays[this.item.day].update.last = this.galleryDays[this.item.day].update.new
               this.files = this.galleryDays[this.item.day].files
               this.visible = true
+
             return;
           });
           }
@@ -121,6 +128,7 @@ export default {
           if (this.galleryDays[this.item.day] && this.galleryDays[this.item.day].files  ) {
             this.files = this.galleryDays[this.item.day].files
             this.visible = true
+
             return;
           } 
         /*

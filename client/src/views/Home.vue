@@ -3,8 +3,11 @@
     <Header />
     <v-main class="ci-app-content">
       <v-container>
+                    <PhotoDialog />
+
         <div v-for="item in gallery" v-bind:key="item.day">        
-            <GalleryFiles  :item="item"/>            
+            <GalleryFiles  :item="item"/>   
+                     
         </div>
       </v-container>
 
@@ -18,6 +21,7 @@
 import { mapGetters } from "vuex";
 import Header from "@/components/layouts/Header.vue";
 import GalleryFiles from "@/components/GalleryFiles.vue";
+import PhotoDialog from "@/components/PhotoDialog.vue";
 
 export default {
   name: "home",
@@ -37,7 +41,8 @@ export default {
 
   components: {
     Header,
-    GalleryFiles
+    GalleryFiles,
+    PhotoDialog
    // 'ci-view':  checkView,
   },
   computed: {
