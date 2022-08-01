@@ -59,9 +59,11 @@ type FilesSrc struct {
 
 type FileSimples []*FileSimple
 type FileSimple struct {
-	UID string  `json:"id"`
-	Src *string `json:"src,omitempty"`
-	Day *string `json:"day,omitempty"`
+	UID    string  `json:"id"`
+	Src    *string `json:"src,omitempty"`
+	Day    *string `json:"day,omitempty"`
+	Height *int    `json:"height,omitempty"`
+	Width  *int    `json:"width,omitempty"`
 }
 
 func (f File) ToFilePath() *FilePath {
@@ -87,7 +89,9 @@ func (fs Files) ToFilePath() FilePaths {
 func (f File) ToDtoSimple() *FileSimple {
 	day := f.Date.Format("20060102")
 	return &FileSimple{
-		UID: f.UID,
-		Day: &day,
+		UID:    f.UID,
+		Day:    &day,
+		Height: f.Height,
+		Width:  f.Width,
 	}
 }

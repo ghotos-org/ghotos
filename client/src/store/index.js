@@ -23,7 +23,8 @@ const state = {
     loaderVerzoegert: false,
     isRequesting: false,
     isLoading: false,
-    pageIsScrolling: false
+    pageIsScrolling: false,
+    doGalleryUpdate: false
 };
   
 const getters = {
@@ -54,6 +55,9 @@ const getters = {
   isRequesting(state) {
     return state.isRequesting;
   },
+  doGalleryUpdate(state) {
+    return state.doGalleryUpdate;
+  },  
 
 }
 
@@ -72,8 +76,7 @@ const actions = {
   ["GET_GALLERY"]({ commit }) {
     commit("FETCH_START");
     return FilesService.getGallery().then((response) => {
-      commit("FETCH_END");      
-   
+      commit("FETCH_END");   
       commit("SET_GALLERY_LIST", response.data);
     }).catch(({ response }) => {
       commit("FETCH_END");
@@ -107,9 +110,12 @@ const actions = {
     });
   },
   ["DELETE_FILE"]({ commit }, id) {
+
     commit("FETCH_START");
    return FilesService.deleteFile(id).then(() => {
       commit("FETCH_END");      
+      commit("DO_GALLERY_UPDATE");
+      
      // commit("SET_LOCAL_UPDATE");
      let file = this.state.files[id];
      //console.log(file.day)
@@ -149,6 +155,7 @@ const mutations = {
   ["SET_GALLERY_LIST"](state, data) {
       state.lastUpdate = data.updated
       state.lastLocalUpdate = new Date().getTime()
+      state.doGalleryUpdate = false   
       state.gallery = data.days;
       if (state.lastUpdate != 0) {
         data.days.forEach(d => {
@@ -161,6 +168,9 @@ const mutations = {
       }
 
   },
+  ["DO_GALLERY_UPDATE"](state) {
+    state.doGalleryUpdate = true
+  },    
   ["SET_FILE"](state, {id,file}) {
     state.files[id] = file
   },  

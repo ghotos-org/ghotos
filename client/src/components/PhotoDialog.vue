@@ -46,15 +46,6 @@
           <v-toolbar-title>Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <!--
-            <v-btn
-              dark
-              text
-              @click="dialog = false"
-            >
-              Save
-            </v-btn>
-            -->
             <v-btn
               dark
               text
@@ -63,21 +54,12 @@
                 <v-icon>mdi-delete</v-icon>
             </v-btn>            
           </v-toolbar-items>
-        </v-toolbar>
-        
-         <div class="ci-file" v-if="bigFileID">
-          <v-img :src="showImage()"  
-          :max-height="(this.$vuetify.breakpoint.height - 130)"
-          :max-width="(this.$vuetify.breakpoint.width)"
-          contain
-          class="grey lighten-2"
-          >
+        </v-toolbar>        
+         <div class="ci-file" v-if="bigFile && bigFile.src" :height="this.$vuetify.breakpoint.height - 130">          
+         <img  :src="bigFile.newSrc" class="selectDisable"  />
           <div v-if="showPrevious" class="ci-file-navi ci-file-p" @click="previous()"><div  class="btn-wrapper"><v-btn fab dark secondary><v-icon>mdi-chevron-left-circle</v-icon></v-btn></div></div>
           <div v-if="showNext" class="ci-file-navi ci-file-n" @click="next()"><div  class="btn-wrapper" ><v-btn fab dark secondary><v-icon>mdi-chevron-right-circle</v-icon></v-btn></div></div>
-          </v-img>
-
-        </div>
-
+        </div> 
       </v-card>
     </v-dialog>
 </template>
@@ -98,13 +80,15 @@ export default {
       bigFile: {},
       showNext: true,
       showPrevious: true,
+      image: null,
     }
   },
   mounted() {
-    this.bigFileID = this.fileID
+
+
   },
   computed: {
-    ...mapGetters(["gallery","galleryDays","files","selectedFile"]),
+    ...mapGetters(["gallery","galleryDays","files","selectedFile","doGalleryUpdate"]),
   },  
   methods: {  
     close(){
@@ -118,6 +102,7 @@ export default {
     },
     selectFile(){
        this.$store.commit("SET_SELECTED_FILE", this.fileID);
+       this.loadFile(this.fileID)
 
     },
     loadFileThumb(){
@@ -136,7 +121,17 @@ export default {
         }
       }
     },
+    calcImage() {
+                this.bigFile = this.files[this.bigFileID]
+
+        this.bigFile.newHeight = Math.min(this.$vuetify.breakpoint.height - 130, this.bigFile.height)
+        this.bigFile.newWidth = Math.min(this.$vuetify.breakpoint.width - 80, this.bigFile.width)
+        this.bigFile.newSrc = this.url + '/f/' + this.bigFile.src + '=w' + this.bigFile.newWidth + '-h' +  this.bigFile.newHeight;
+
+                this.$store.commit("SET_SELECTED_FILE", this.bigFileID);
+    },
     async loadFile(id){
+      console.log("load",id)
           this.bigFileID = id
           function loadGallery(){
           if (!This.gallery){
@@ -153,8 +148,7 @@ export default {
         await loadGallery()
         if (!this.files[this.bigFileID]){
             return this.$store.dispatch("GET_FILE_SRC", this.bigFileID).then(()=>{
-                this.bigFile = this.files[this.bigFileID]
-                this.$store.commit("SET_SELECTED_FILE", this.bigFileID);
+                this.calcImage();
                 This.$forceUpdate();
               return 
               
@@ -162,8 +156,8 @@ export default {
               return
             })
         }
-        this.bigFile = this.files[this.bigFileID]
-        this.$store.commit("SET_SELECTED_FILE", this.bigFileID);
+          this.calcImage();
+          this.$forceUpdate();
 
   
       },
@@ -177,8 +171,11 @@ export default {
               this.$dialog.message.info('deleting',{timeout: 1000})
               this.$store.dispatch("DELETE_FILE", this.bigFileID ).then(() => {
               this.$store.dispatch("GET_GALLERY_DAY", {day : this.bigFile.day}  ).then(() => {
+                  //this.files = this.galleryDays[this.bigFile.day].files
+                  this.$forceUpdate();
                   if (id === 0){
-                      this.$router.push('/')
+                    this.close()
+                      //this.$router.push('/')
                   }else {
                     this.loadFile(id)
                   }
@@ -192,13 +189,24 @@ export default {
               });
             }
       },
+      imageSource(){
+        if (this.bigFile && this.bigFile.src) {
+            let imageUrl = this.url + '/f/' + this.bigFile.src
+            return imageUrl + '=w' + (this.$vuetify.breakpoint.width ) + '-h' +  (this.$vuetify.breakpoint.height);
+        }
+        return
+      },      
+      /*
       showImage(){
         if (this.bigFileID && this.files[this.bigFileID]) {
             let imageUrl = this.url + '/f/' + this.files[this.bigFileID].src
+            //console.log(this.files[this.bigFileID], this.url + '/f/' + this.files[this.bigFileID].src )
+
             return imageUrl + '=w' + (this.$vuetify.breakpoint.width ) + '-h' +  (this.$vuetify.breakpoint.height);
         }
         return
       },
+      */
       showPreview(){
         let imageUrl = this.url + '/f/' + this.bigFile.src
         return  imageUrl + '=w50-h50';

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"ghotos/model"
 	"ghotos/repository"
+	"ghotos/util/tools"
 	"io"
 	"net/http"
 	"os"
@@ -117,7 +118,7 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eTag := file.UpdatedAt.Format("20060102150405000") + "_" + strconv.Itoa(width) + "_" + strconv.Itoa(height) + "_" + file.UID
+	eTag := "filetag-" + file.UpdatedAt.Format("20060102150405000") + "_" + strconv.Itoa(width) + "_" + strconv.Itoa(height) + "_" + file.UID
 
 	bufferOrg, err := bimg.Read(file.Path + "/" + file.Filename)
 	imageOrg := bimg.NewImage(bufferOrg)
@@ -144,9 +145,16 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 		quality = 100
 	}
 
+	size, err := bimg.Size(bufferOrg)
+
+	if err != nil {
+		printError(app, w, http.StatusInternalServerError, "Dateigroö0e kann nicht ermittelt werden!", err)
+		return
+	}
+
 	options := bimg.Options{
-		Height:        height,
-		Width:         width,
+		Height:        tools.Min(height, size.Height),
+		Width:         tools.Min(width, size.Width),
 		Enlarge:       true,
 		Crop:          false,
 		Quality:       quality,
@@ -169,7 +177,7 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	e := `"` + eTag + `"`
+	//e := `"` + eTag + `"`
 
 	w.Header().Set("Cache-Control", "private, max-age=2592000, no-transform") // 30 days
 	w.Header().Set("Content-Length", strconv.Itoa(len(image)))
@@ -178,13 +186,17 @@ func (app *App) HandleShowFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("x-xss-protection", "0")
 	w.Header().Set("access-control-expose-headers", "Content-Length")
 
+	fmt.Printf("%+v\n", r.Header.Get("If-None-Match"))
+
 	if match := r.Header.Get("If-None-Match"); match != "" {
-		if strings.Contains(match, e) {
+		if strings.Contains(match, eTag) {
+			fmt.Printf("%+v\n", "############################################################################")
+
 			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 	}
-
+	w.Header().Set("etag", eTag)
 	w.Header().Set("Content-Type", file.MimeType)
 	w.Header().Set("content-disposition", "inline;filename=\""+file.Filename+"\"")
 

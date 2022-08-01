@@ -1,4 +1,12 @@
 
+.selectDisable {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
 
 .ci-image-preview {
     width: 310px;
@@ -38,7 +46,12 @@
     /*margin-top: -80px;*/
     padding: 40px 10px 0 10px;
     text-align: center;
-    position: relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+   /* height: 90vh; */
+
+   /* position: relative;  */
     .ci-file-navi {
         position: absolute;
         width: 50%;      
@@ -55,9 +68,9 @@
         }  
         &.ci-file-p {
             width: 50%;        
-            height: 100%;
+           
             left: 0;
-            top: 0;
+            top: 80px;
             bottom: 0;
             .btn-wrapper {
                 left: 0;
@@ -65,10 +78,11 @@
             }  
         }
         &.ci-file-n {
+            top: 80px;
+
             width: 50%;        
-            height: 100%;
+           
             right: 0;
-            top: 0;
             bottom: 0;
             .btn-wrapper {
                 right: 0;

@@ -120,6 +120,7 @@ export default {
 
          a.scrollIntoView({behavior: 'smooth'}, true);
 */
+      this.$forceUpdate()
       this.$emit('closePhotoDialog')
 
     },

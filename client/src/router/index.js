@@ -40,15 +40,7 @@ export const router = new Router({
             path: '/password',
             props: { page_newpassword: true },
             component: () => import("@/views/RegisterRequest"),
-        },
-        {
-            path: "/photo/:file",
-            name: "photo",
-            meta: {
-                requiresAuth: true
-            },
-            component: () => import("@/views/Photo"),
-        },        
+        }      
     ]
 });
 

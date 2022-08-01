@@ -46,7 +46,7 @@ export default {
    // 'ci-view':  checkView,
   },
   computed: {
-    ...mapGetters(["gallery","pageIsScrolling", "selectedFile", "files", "localUpdate"]),
+    ...mapGetters(["gallery","pageIsScrolling", "selectedFile", "files", "localUpdate", "doGalleryUpdate"]),
   },
   mounted() {
     //console.log("home mounted", this.gallery)
@@ -81,6 +81,14 @@ export default {
   methods: {
     closePhotoDialog(){
 
+      if  (this.doGalleryUpdate) {
+               return this.$store.dispatch("GET_GALLERY").then(() => {
+          this.localUpdate.last = this.localUpdate.new
+            this.$forceUpdate()
+
+        });
+      }
+  
 
     },
     pageScroll(){
