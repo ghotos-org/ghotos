@@ -94,11 +94,20 @@ export default {
     close(){
       this.dialog = false
 
-      let file = this.files[this.bigFileID]
-        let a = document.getElementById('g-' + file.day);
-      a.scrollIntoView({block: "center"});
+      if (!(this.bigFileID && this.files[this.bigFileID])) {
+          let file = this.files[this.bigFileID]
+          if ( this.files[this.bigFileID] &&  this.files[this.bigFileID].day ) {
 
-      this.$emit('closePhotoDialog', this.files[this.bigFileID])
+   
+            let a = document.getElementById('g-' + file.day);
+            a.scrollIntoView({block: "center"});
+            this.$emit('closePhotoDialog', this.files[this.bigFileID])
+          }
+          this.$emit('closePhotoDialog')
+      }else {
+          this.$emit('closePhotoDialog')
+      }
+
     },
     selectFile(){
        this.$store.commit("SET_SELECTED_FILE", this.fileID);
@@ -166,10 +175,37 @@ export default {
               text: 'Delete?',
               persistent: true
             })
-            if (res) {        
+            if (res) {   
+                 this.getNextFile(this.bigFileID,false).then((id)=>{
+
+                this.$store.dispatch("DELETE_FILE", this.bigFileID ).then(() => {
+
+                   this.loadFile(id)
+
+                     // let day1 = this.bigFile.day + 0;
+                     /*
+                     this.getNextFile(this.bigFileID,true).then((id)=>{
+                      if (id === 0){
+                         this.close()
+                      }else {
+                        
+                        this.loadFile(id)
+                      }
+                     });
+                     */
+                });
+
+                });
+
+              
+            }
+/*
+                
               this.getNextFile(this.bigFileID,true).then((id)=>{
               this.$dialog.message.info('deleting',{timeout: 1000})
               this.$store.dispatch("DELETE_FILE", this.bigFileID ).then(() => {
+              
+   
               this.$store.dispatch("GET_GALLERY_DAY", {day : this.bigFile.day}  ).then(() => {
                   //this.files = this.galleryDays[this.bigFile.day].files
                   this.$forceUpdate();
@@ -188,6 +224,7 @@ export default {
               });                        
               });
             }
+            */
       },
       imageSource(){
         if (this.bigFile && this.bigFile.src) {

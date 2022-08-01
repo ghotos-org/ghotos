@@ -74,7 +74,7 @@ export default {
 
 
   computed: {
-    ...mapGetters(["galleryDays","pageIsScrolling", "selectedFile"]),
+    ...mapGetters(["galleryDays","pageIsScrolling", "selectedFile", "galleryFiles"]),
     update: {
         get: function (){
           if (this.item.day && this.galleryDays && this.galleryDays[this.item.day] && this.galleryDays[this.item.day].update) {
@@ -88,26 +88,13 @@ export default {
 
   },  
   mounted(){
-   // console.log("mounted galleryfiles",this.item, this.item.day)
-    //console.log("mounted galleryfiles")
-    //console.log(this.update, this.lastUpdate)
-    //this.update = this.lastUpdate
-    /*
-    console.log(this.visible)
-    if (this.visible && !this.galleryDays[this.item.day] || (this.galleryDays[this.item.day] && this.galleryDays[this.item.day].update.last !=  this.galleryDays[this.item.day].update.new)) {
-      console.log("innen")
-      this.visible = false
-        return  this.$store.dispatch("GET_GALLERY_DAY", {day : this.item.day}).then(() => {
-          this.galleryDays[this.item.day].update.last = this.galleryDays[this.item.day].update.new
-          this.files = this.galleryDays[this.item.day].files
-          this.visible = true
-        return;
-      });
-    }
-    */
   }, 
   methods: {
     closePhotoDialog(){
+    this.files = this.galleryDays[this.item.day].files
+    console.log( this.files)
+
+
      // console.log("test", $e.day)
 
       /*

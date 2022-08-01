@@ -16,7 +16,7 @@ const state = {
     selectedFile: null,
     localUpdate: {last: 0, new: 1},
     newLocalUpdate: null,    
-    lastUpdate: 0,
+    lastUpdate: 0,    
     gallery: null,
     galleryDays: {},
     files: {},
@@ -24,7 +24,7 @@ const state = {
     isRequesting: false,
     isLoading: false,
     pageIsScrolling: false,
-    doGalleryUpdate: false
+    doGalleryUpdate: false,
 };
   
 const getters = {
@@ -57,7 +57,7 @@ const getters = {
   },
   doGalleryUpdate(state) {
     return state.doGalleryUpdate;
-  },  
+  } 
 
 }
 
@@ -117,10 +117,32 @@ const actions = {
       commit("DO_GALLERY_UPDATE");
       
      // commit("SET_LOCAL_UPDATE");
-     let file = this.state.files[id];
+     let pfile = this.state.files[id];
      //console.log(file.day)
-     if (file.day){
-      commit("SET_LOCAL_DAY_UPDATE",file.day);
+     if (pfile.day){
+
+      
+     // commit("SET_LOCAL_DAY_UPDATE",file.day);
+    //  delete this.state.files[id];
+    //  console.log(this.state.galleryDays[file.day])
+    
+      let files = {}
+      Object.assign(files, this.state.files);
+      delete files[id];
+
+      Object.assign(this.state.files, files);
+
+  
+      let  galleryFiles = []
+
+       this.state.galleryDays[pfile.day].files.forEach((file) => {
+          if (file != id) {
+            galleryFiles.push(file);
+          }
+       });
+
+       this.state.galleryDays[pfile.day].files = galleryFiles;
+
      }else{
       commit("SET_LOCAL_UPDATE");
 
@@ -174,6 +196,17 @@ const mutations = {
   ["SET_FILE"](state, {id,file}) {
     state.files[id] = file
   },  
+  ["REMOVE_GALLERY_DAY"](state, day) {
+   
+
+    console.log(state.gallery)
+    state.gallery.forEach((item,index) => {
+            if (item.day == day) {
+               delete state.gallery[index];
+               return
+            }
+    });
+  },    
   ["SET_SELECTED_FILE"](state, file) {
     state.selectedFile = file
   },   

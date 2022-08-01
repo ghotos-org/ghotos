@@ -3,11 +3,8 @@
     <Header />
     <v-main class="ci-app-content">
       <v-container>
-                    <PhotoDialog v:on="closeDialog" />
-
         <div v-for="item in gallery" v-bind:key="item.day">        
-            <GalleryFiles :id="'g-' + item.day"  :item="item"  @closePhotoDialog="closePhotoDialog" />   
-                     
+        <GalleryFiles :id="'g-' + item.day"  :item="item"  @closePhotoDialog="closePhotoDialog" />                        
         </div>
       </v-container>
 
@@ -21,7 +18,6 @@
 import { mapGetters } from "vuex";
 import Header from "@/components/layouts/Header.vue";
 import GalleryFiles from "@/components/GalleryFiles.vue";
-import PhotoDialog from "@/components/PhotoDialog.vue";
 
 export default {
   name: "home",
@@ -33,31 +29,24 @@ export default {
       url: process.env.VUE_APP_API_URL,
       fab: false,
       scrollTimeout: null,
-
- 
-
-    };
+   };
   },
 
   components: {
     Header,
     GalleryFiles,
-    PhotoDialog
-   // 'ci-view':  checkView,
   },
   computed: {
     ...mapGetters(["gallery","pageIsScrolling", "selectedFile", "files", "localUpdate", "doGalleryUpdate"]),
   },
   mounted() {
-    //console.log("home mounted", this.gallery)
     if (this.localUpdate.last != this.localUpdate.new){
         return this.$store.dispatch("GET_GALLERY").then(() => {
           this.localUpdate.last = this.localUpdate.new
         });    
-
     }
 
-
+    /*
 
     var This = this
     setTimeout(() => {
@@ -68,27 +57,26 @@ export default {
         id = This.files[This.selectedFile].day
       }
       if (id) {
-        
         document.getElementById(id).scrollIntoView({
             block: "center"
         });
       }
     },400)
-
+*/
 
 
   },
   methods: {
     closePhotoDialog(){
-
+      /*
       if  (this.doGalleryUpdate) {
                return this.$store.dispatch("GET_GALLERY").then(() => {
           this.localUpdate.last = this.localUpdate.new
             this.$forceUpdate()
-
         });
       }
-  
+      */
+    this.$forceUpdate()
 
     },
     pageScroll(){
