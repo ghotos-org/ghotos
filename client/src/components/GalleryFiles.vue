@@ -1,7 +1,8 @@
 
 <template>
+ 
     <v-row v-observe-visibility="visibilityChanged"  :dense="true" v-bind:id="item.day" ref="days">
-      <v-col cols="12">{{ item.day | moment("dddd, Do MMMM YYYY") }}</v-col>
+      <v-col cols="12"><span :id="'gallery-' + item.day">{{ item.day | moment("dddd, Do MMMM YYYY") }}</span></v-col>
      
       <template  v-if="files" >
         <v-col 
@@ -34,6 +35,7 @@
       </template>
     
     </v-row>
+
 </template>
 <script>
 import { mapGetters } from "vuex";

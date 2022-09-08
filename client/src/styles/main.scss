@@ -102,3 +102,33 @@
 .ci-selected-file {
     border: 3px solid blue
 }
+
+
+html, body {
+    overflow: hidden;
+  }
+
+.page-content {
+    overflow-y: scroll;
+    position: fixed; 
+    scrollbar-width: none;
+
+    top: 60px; right: 0; bottom: 0; left: 0;    
+
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For Internet Explorer and Edge */
+
+    .scrollbar {
+        position: fixed; 
+        width: 80px;
+        top: 60px; right: 0; bottom: 0;      
+        border: 1px solid #000;
+
+    }
+    
+}
+
+.page-content::-webkit-scrollbar {
+    width: 0px; /* For Chrome, Safari, and Opera */
+}
+             /* 7 */

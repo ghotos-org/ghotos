@@ -2,10 +2,15 @@
   <v-app id="ci-home"  v-scroll="pageScroll"  >
     <Header />
     <v-main class="ci-app-content">
-      <v-container>
+      <v-container class="page-content">
         <div v-for="item in gallery" v-bind:key="item.day">        
-        <GalleryFiles :id="'g-' + item.day"  :item="item"  @closePhotoDialog="closePhotoDialog" />                        
+        <GalleryFiles :id="'g-' + item.day"  :item="item"  @closePhotoDialog="closePhotoDialog" />   
         </div>
+        <div class="scrollbar">
+          <div v-for="item in gallery" v-bind:key="item.day">     
+            <a :name="item.day">{{item.day}}</a>
+          </div>                                    
+        </div>                     
       </v-container>
 
       <v-btn  v-scroll="onScroll"  v-show="fab" fab dark fixed bottom right color="primary" @click="toTop">
