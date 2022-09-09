@@ -6,14 +6,15 @@
      
       <template  v-if="files" >
         <v-col 
-          v-for="file in files"
+          v-for="(file, index) in files"
           v-bind:key="file"
           :ref="file"
-          :id="'th-' + file"
+          :id="'file-' + item.day + '-' + index"
+
           class="d-flex child-flex"
           cols="6 col-sm-3 col-md-3 col-lg-2  col-xl-1"          
         >     
-          <PhotoDialog :fileID="file" @closePhotoDialog="closePhotoDialog" />
+          <PhotoDialog :fileID="file" :id="file" @closePhotoDialog="closePhotoDialog" />
         </v-col>
       </template>        
       <template v-else>
@@ -24,7 +25,7 @@
           cols="6 col-sm-3 col-md-3 col-lg-2  col-xl-1"
           
         >       
-          <div ref="infoBox">    
+          <div ref="infoBox" :id="'file-' + item.day + '-' + item.count">    
             <v-responsive :aspect-ratio="4 / 3">
             
               <div style="background: #cccccc; height: 100%" width="400px">&nbsp;</div>
@@ -90,12 +91,13 @@ export default {
 
   },  
   mounted(){
+ 
+
   }, 
   methods: {
     closePhotoDialog(){
     this.files = this.galleryDays[this.item.day].files
-    console.log( this.files)
-
+        console.log(this.files)
 
      // console.log("test", $e.day)
 

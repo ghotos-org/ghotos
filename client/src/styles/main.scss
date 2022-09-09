@@ -109,14 +109,17 @@ html, body {
   }
 
 .page-content {
-    overflow-y: scroll;
     position: fixed; 
+    overflow-y: scroll;
     scrollbar-width: none;
 
     top: 60px; right: 0; bottom: 0; left: 0;    
 
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none; /* For Internet Explorer and Edge */
+    /*
+     scrollbar-width: none;
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
+    */
 
     .scrollbar {
         position: fixed; 
@@ -124,11 +127,15 @@ html, body {
         top: 60px; right: 0; bottom: 0;      
         border: 1px solid #000;
 
+        .s-item a{
+            display: block;
+        }
+
+
     }
     
 }
-
 .page-content::-webkit-scrollbar {
     width: 0px; /* For Chrome, Safari, and Opera */
 }
-             /* 7 */
+     

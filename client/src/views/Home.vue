@@ -3,13 +3,19 @@
     <Header />
     <v-main class="ci-app-content">
       <v-container class="page-content">
-        <div v-for="item in gallery" v-bind:key="item.day">        
+        <div v-for="item in gallery" v-bind:key="item.day" class="wrapper-gallery"  >        
         <GalleryFiles :id="'g-' + item.day"  :item="item"  @closePhotoDialog="closePhotoDialog" />   
         </div>
         <div class="scrollbar">
-          <div v-for="item in gallery" v-bind:key="item.day">     
-            <a :name="item.day">{{item.day}}</a>
-          </div>                                    
+          <!--
+          <div v-for="item in gallery" v-bind:key="item.day" class="s-item" :style="{ height:  100/gallery.length + '%' }" @click="gotoSelectedVendor(item.day)">  
+            <span>{{item.day}}</span>
+          </div>      
+        -->
+          <div v-for="item in filesDay" v-bind:key="item.day + '-' + item.idx" :style="{ height:  100/filesDay.length + '%' }"  @click="gotoSelectedVendor(item)">
+              {{ item.day.substring(4, 6) +  '.' + item.day.substring(0, 4) }}
+          </div>
+                              
         </div>                     
       </v-container>
 
@@ -42,7 +48,7 @@ export default {
     GalleryFiles,
   },
   computed: {
-    ...mapGetters(["gallery","pageIsScrolling", "selectedFile", "files", "localUpdate", "doGalleryUpdate"]),
+    ...mapGetters(["filesDay","gallery","pageIsScrolling", "selectedFile", "files", "localUpdate", "doGalleryUpdate"]),
   },
   mounted() {
     if (this.localUpdate.last != this.localUpdate.new){
@@ -72,6 +78,11 @@ export default {
 
   },
   methods: {
+    gotoSelectedVendor(item) {
+      console.log('file-' + item.day + '-' + item.idx)
+      let a = document.getElementById('file-' + item.day + '-' + item.idx);
+      a.scrollIntoView({block: "center"});
+    } ,
     closePhotoDialog(){
       /*
       if  (this.doGalleryUpdate) {

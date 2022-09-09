@@ -7,7 +7,7 @@
       </v-btn>
       <v-app-bar-nav-icon v-else @click.stop="drawer = !drawer" ></v-app-bar-nav-icon>
         <v-toolbar-title>
-            {{ title }}
+            {{ title }} 
         </v-toolbar-title>
         <v-spacer></v-spacer>
 
@@ -145,8 +145,13 @@ export default {
       isSelecting: false,
     }},   
   computed: {
+    /*
     ...mapGetters("auth",["loggedIn"]),
+    ...mapGetters("fileCount"),
+    */
     //"default",["galleryDays"]
+    ...mapGetters('auth', ['loggedIn']),
+
   },      
   mounted(){
   },
