@@ -25,6 +25,8 @@ const state = {
     isLoading: false,
     pageIsScrolling: false,
     doGalleryUpdate: false,
+    fileCount: false,
+    filesDay: [],
 };
   
 const getters = {
@@ -57,9 +59,15 @@ const getters = {
   },
   doGalleryUpdate(state) {
     return state.doGalleryUpdate;
-  } 
-
+  },
+  fileCount(state) {
+    return state.fileCount;
+  } ,
+  filesDay(state) {
+    return state.filesDay;
+  }   
 }
+
 
 /*
 function getIndexDayFromGalleryArray(array, day){
@@ -179,8 +187,20 @@ const mutations = {
       state.lastLocalUpdate = new Date().getTime()
       state.doGalleryUpdate = false   
       state.gallery = data.days;
+      let filesDay = [];
+      let count = 0;
+     // let lastYear = 0
       if (state.lastUpdate != 0) {
-        data.days.forEach(d => {
+        data.days.forEach(d => {          
+            count = count + d.count;
+
+      
+            for (let i = 0; i < d.count; i++) {
+              filesDay.push({day: d.day, idx: i});
+            }
+   
+
+
             if (state.galleryDays[d.day]) {
                 if (state.galleryDays[d.day].files.length != d.count) {
                     state.galleryDays[d.day].update.last = new Date().getTime()
@@ -188,6 +208,10 @@ const mutations = {
             }
         });
       }
+
+      state.fileCount = count;
+      state.filesDay = filesDay;
+
 
   },
   ["DO_GALLERY_UPDATE"](state) {
